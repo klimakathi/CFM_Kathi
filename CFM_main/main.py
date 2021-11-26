@@ -22,17 +22,16 @@ import RCMpkl_to_spin as RCM
 
 __author__ = "C. Max Stevens, Vincent Verjans, Brita Horlings, Annika Horlings, Jessica Lundin"
 __license__ = "MIT"
-__version__ = "1.1.0"
+__version__ = "1.1.6"
 __maintainer__ = "Max Stevens"
 __email__ = "maxstev@umd.edu"
 __status__ = "Production"
-
 
 if __name__ == '__main__':
 
     if len(sys.argv) >= 2:
         configName = os.path.join(os.path.dirname(__file__), sys.argv[1])
-        print('configName:', configName)
+        print(configName)
     else:
         print('No .json configuration file specified. Exiting.')
         sys.exit()
@@ -42,12 +41,12 @@ if __name__ == '__main__':
         jsonString = f.read()
         c = json.loads(jsonString)
 
-    tic=time.time()
+    tic = time.time()
 
     print("")
     print("-----------------------------------------------------------------------")
     print("-----------------------------------------------------------------------")
-    print("<<<<<<<< Running the Community Firn Model (CFM), Version %s >>>>>>>>" %__version__)
+    print("<<<<<<<< Running the Community Firn Model (CFM), Version %s >>>>>>>>" % __version__)
     print("<<<<<<<< Please cite your use:                                 >>>>>>>>")
     print("<<<<<<<< https://doi.org/10.5194/gmd-13-4355-2020              >>>>>>>>")
     print("<<<<<<<< Distributed under terms of the MIT license.           >>>>>>>>")
@@ -71,14 +70,14 @@ if __name__ == '__main__':
     if c['input_type'] == 'dataframe':
         pkl_name = os.path.join(c['InputFileFolder'], c['DFfile'])
         timeres = c['DFresample']
-        climateTS, stepsperyear, depth_S1, depth_S2, desired_depth = RCM.makeSpinFiles(pkl_name, timeres=timeres, melt=c['MELT'])
+        climateTS, stepsperyear, depth_S1, depth_S2, desired_depth = RCM.makeSpinFiles(pkl_name, timeres=timeres,
+                                                                                       melt=c['MELT'], desired_depth=30)
     else:
-        print('climateTS = None')
         climateTS = None
 
     firn = FirnDensityNoSpin(configName, climateTS=climateTS, NewSpin=NewSpin)
     firn.time_evolve()
 
     shutil.copy(configName, c['resultsFolder'])
-    
-    print('run time =', time.time()-tic, 'seconds')
+
+    print('run time =', time.time() - tic, 'seconds')

@@ -116,6 +116,7 @@ class FirnDensitySpin:
 
             CFM_exts = ['.json', '.hdf5']
             if CFM_exts and all(((elem == ".json") or (elem == '.hdf5')) for elem in dir_unique):
+
                 rmtree(self.c['resultsFolder'])
                 os.makedirs(self.c['resultsFolder'])
             else:
@@ -128,6 +129,7 @@ class FirnDensitySpin:
                     os.remove(path_to_file)
 
         else:
+            print('making dir')
             os.makedirs(self.c['resultsFolder'])
 
         # ---------------------------------------------------------------------------------------------------------------
@@ -141,9 +143,9 @@ class FirnDensitySpin:
             input_year_temp = input_year_bdot = climateTS['time']
 
         else:
-            input_temp, input_year_temp = read_input(
+            input_temp, input_year_temp, input_temp_full, input_year_temp_full = read_input(
                 os.path.join(self.c['InputFileFolder'], self.c['InputFileNameTemp']))
-            input_bdot, input_year_bdot = read_input(
+            input_bdot, input_year_bdot, input_bdot_full, input_year_bdot_full = read_input(
                 os.path.join(self.c['InputFileFolder'], self.c['InputFileNamebdot']))
 
         if input_temp[0] < 0.0:
@@ -174,24 +176,22 @@ class FirnDensitySpin:
             print("Add 'manual_climate' to the json to enable specifying long-term bdot and T")
             self.c['manual_climate'] = False
 
-        # If we want to use a manually specified climate for spin up (e.g. known long-term values).
-        if self.c['manual_climate']:
-            # specify deep T as mean temperature for spin up calculations (compaction,grain growth)
-            self.temp0 = self.c['deepT']
-            # *1e-3/0.917 #specify long term accumulation as mean accumulation for spin up calculations (compaction,
-            # grain growth) + conversion from mmWE/yr to mIE/yr
-            self.bdot0 = self.c['bdot_long']
+        if self.c[
+            'manual_climate']:  # If we want to use a manually specified climate for spin up (e.g. known long-term values).
+            self.temp0 = self.c[
+                'deepT']  # specify deep T as mean temperature for spin up calculations (compaction,grain growth)
+            self.bdot0 = self.c[
+                'bdot_long']  # *1e-3/0.917 #specify long term accumulation as mean accumulation for spin up calculations (compaction,grain growth) + conversion from mmWE/yr to mIE/yr
             print('make sure "bdot_long" has units of mIE/yr!')
 
         # could include others, e.g. surface density
         # ---------------------------------------------------------------------------------------------------------------
 
-        # ---------------------------------------------------------------------------------------------------------------
-        # set up model grid
-        # ---------------------------------------------------------------------------------------------------------------
-
-        # number of grid points
-        self.gridLen = int((self.c['H'] - self.c['HbaseSpin']) / (self.bdot0 / self.c['stpsPerYear']))
+        ############################
+        ### set up model grid ######
+        ############################
+        self.gridLen = int(
+            (self.c['H'] - self.c['HbaseSpin']) / (self.bdot0 / self.c['stpsPerYear']))  # number of grid points
 
         gridHeight = np.linspace(self.c['H'], self.c['HbaseSpin'], self.gridLen)
         self.z = self.c['H'] - gridHeight
@@ -222,16 +222,15 @@ class FirnDensitySpin:
 
         try:  # VV use Reeh corrected T
             if self.c['ReehCorrectedT'] and self.c['MELT']:
-                input_snowmelt, input_year_snowmelt = read_input(os.path.join(self.c['InputFileFolder'],
-                                                                              self.c['InputFileNamemelt']))  # VV
+                input_snowmelt, input_year_snowmelt, input_snowmelt_full, input_year_snowmelt_full = read_input(
+                    os.path.join(self.c['InputFileFolder'], self.c['InputFileNamemelt']))  # VV
                 meanmelt = np.mean(input_snowmelt)  # mean melt per year [mIE/yr] (units are specified in Reeh 2008)
                 meanacc = self.bdot0  # mean annual accumulation [mIE/yr]
-                # Reeh 1991 and Reeh 2008 PMAX value is set at 0.6 melt becomes superimposed ice until it reaches
-                # 0.6 of annual acc, then runoff
-                self.SIR = min(meanmelt, 0.6 * meanacc)
+                self.SIR = min(meanmelt,
+                               0.6 * meanacc)  # Reeh 1991 and Reeh 2008 PMAX value is set at 0.6 melt becomes superimposed ice until it reaches 0.6 of annual acc, then runoff
                 THL = self.temp0 + 26.6 * self.SIR
                 THL = min(THL, 273.15)
-            elif self.c['ReehCorrectedT'] and not self.c['MELT']:
+            elif (self.c['ReehCorrectedT'] and not self.c['MELT']):
                 print('"ReehCorrectedT" is True but melt is not turned on. That is weird. Exiting.')
                 sys.exit()
 
@@ -262,16 +261,13 @@ class FirnDensitySpin:
             # Recompute HL analytic on the regridded profile #
             self.age, self.rho = hl_analytic(self.c['rhos0'], self.z, THL, AHL)  # self.age is in age in seconds
             print('After doublegrid, grid length is ', self.gridLen)
-            # print('z ', self.z[-5:])
 
         # except:
         #     self.doublegrid = False
         #     print('you should add "doublegrid" to the json')
 
-        # VV filler values to avoid model blow up if THL and AHL are out of HL calibration range
-        # if self.c['initprofile']:
-        # VV this does not matter as it is rectified when we initialise profie below
-        # self.age = S_PER_YEAR*100*np.ones_like(self.dz)
+        # if self.c['initprofile']: # VV filler values to avoid model blow up if THL and AHL are out of HL calibration range
+        # self.age = S_PER_YEAR*100*np.ones_like(self.dz) #VV this does not matter as it is rectified when we initialise profie below
         # self.rho = 500*np.ones_like(self.dz)#VV this does not matter as it is rectified when we initialise profile
         # ---------------------------------------------------------------------------------------------------------------
 
@@ -306,10 +302,10 @@ class FirnDensitySpin:
                 self.Ts = self.Ts - self.c['TAmp'] * (np.cos(2 * np.pi * np.linspace(0, self.years, self.stp)))
 
             elif self.c['SeasonalThemi'] == 'south':
-                if self.c['coreless']:  # Coreless winter, from Orsi
-                    self.Ts = self.Ts + self.c['TAmp'] * (np.cos(2 * np.pi * np.linspace(0, self.years, self.stp))
-                                                          + 0.3 * np.cos(
-                                4 * np.pi * np.linspace(0, self.years, self.stp)))
+                if self.c['coreless']:
+                    self.Ts = self.Ts + self.c['TAmp'] * (
+                                np.cos(2 * np.pi * np.linspace(0, self.years, self.stp)) + 0.3 * np.cos(
+                            4 * np.pi * np.linspace(0, self.years, self.stp)))  # Coreless winter, from Orsi
                 else:
                     self.Ts = self.Ts + self.c['TAmp'] * (
                         np.cos(2 * np.pi * np.linspace(0, self.years, self.stp)))  # This is basic for Antarctica
@@ -408,7 +404,6 @@ class FirnDensitySpin:
             else:
                 pass
         except:
-            # print('no_densification not in .json; setting to false')
             self.c['no_densification'] = False
         # ---------------------------------------------------------------------------------------------------------------
 
@@ -494,8 +489,6 @@ class FirnDensitySpin:
                 'MaxSP': FirnPhysics(PhysParams).MaxSP
             }
 
-            # RD is a dictionary containing drho/dt and viscosity, calculated in physics.py according to
-            # the selected physics
             RD = physicsd[self.c['physRho']]()
             drho_dt = RD['drho_dt']
             if self.c['no_densification']:
@@ -516,7 +509,7 @@ class FirnDensitySpin:
             if self.THist:
                 self.Hx = RD['Hx']
 
-            # update temperature grid and isotope grid if user specifies -----------------------------------------------
+            ### update temperature grid and isotope grid if user specifies
             if self.c['heatDiff']:
                 self.Tz, self.T10m = heatDiff(self, iii)
 
@@ -572,21 +565,20 @@ class FirnDensitySpin:
             if self.c['physGrain']:
                 self.r2 = FirnPhysics(PhysParams).graincalc(iii)
                 r2surface = FirnPhysics(
-                    PhysParams).surfacegrain()  # This considers whether to use a fixed or calculated surface grain size
+                    PhysParams).surfacegrain()  # This considers whether to use a fixed or calculated surface grain size.
                 self.r2 = np.concatenate(([r2surface], self.r2[:-1]))  # VV form the new grain size array
 
             if self.doublegrid:
                 self.gridtrack = np.concatenate(([1], self.gridtrack[:-1]))
                 # if self.gridtrack[-1]==2:
-                #     self.dz, self.z, self.rho, self.Tz, self.mass, self.sigma, self. mass_sum, self.age,
-                #     self.bdot_mean, self.LWC, self.gridtrack, self.r2 = regrid(self)
+                #     self.dz, self.z, self.rho, self.Tz, self.mass, self.sigma, self. mass_sum, self.age, self.bdot_mean, self.LWC, self.gridtrack, self.r2 = regrid(self)
 
                 if self.gridtrack[-1] != 3:  # VV works for whatever the gridtrack value we have
-                    self.dz, self.z, self.rho, self.Tz, self.mass, self.sigma, self.mass_sum, self.age, \
-                     self.bdot_mean, self.LWC, self.gridtrack, self.r2 = regrid22(self)  # VV regrid22
+                    self.dz, self.z, self.rho, self.Tz, self.mass, self.sigma, self.mass_sum, self.age, self.bdot_mean, self.LWC, self.gridtrack, self.r2 = regrid22(
+                        self)  # VV regrid22
 
             # write results at the end of the time evolution
-            if iii == (self.stp - 1):
+            if (iii == (self.stp - 1)):
                 if self.c['initprofile']:
                     print('Updating density using init file')
                     initfirn = pd.read_csv(self.c['initfirnFile'], delimiter=',')
@@ -636,14 +628,13 @@ class FirnDensitySpin:
 
                         self.iso_out[isotope] = np.concatenate(([self.t * iii + 1], self.Isoz[isotope]))
                         self.iso_sig2_out[isotope] = np.concatenate(([self.t * iii + 1], self.Iso_sig2_z[isotope]))
-                        if (self.c['initprofile']) and ('iso{}'.format(isotope) in list(initfirn)):
+                        if ((self.c['initprofile']) and ('iso{}'.format(isotope) in list(initfirn))):
                             print('Interpolating isotope {}'.format(isotope))
                             isoIntFun = interpolate.interp1d(init_depth, initfirn['iso{}'.format(isotope)].values,
                                                              'nearest', fill_value='extrapolate')
                             self.iso_out[isotope] = np.concatenate(([self.t * iii + 1], isoIntFun(self.z)))
 
-                            # self.iso_out[isotope] = np.interp(self.z,init_depth,initfirn['iso{}'.
-                            # format(isotope)].values)
+                            # self.iso_out[isotope] = np.interp(self.z,init_depth,initfirn['iso{}'.format(isotope)].values)
                 else:
                     self.iso_time = None
                 if self.c['MELT']:
