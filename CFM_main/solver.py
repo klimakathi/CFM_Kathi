@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-'''
+"""
 Functions to solve the diffusion equation
-'''
+"""
 
 import numpy as np
 from scipy import interpolate
@@ -10,10 +10,11 @@ from scipy.sparse import spdiags
 import scipy.sparse.linalg as splin
 from constants import *
 import sys
+import time as t
 
 
 def solver(a_U, a_D, a_P, b):
-    '''
+    """
     function for solving matrix problem
 
     :param a_U:
@@ -22,7 +23,7 @@ def solver(a_U, a_D, a_P, b):
     :param b:
 
     :return phi_t:
-    '''
+    """
 
     nz = np.size(b)
 
@@ -38,11 +39,16 @@ def solver(a_U, a_D, a_P, b):
     return phi_t
 
 
-####!!!!
-
 def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, airdict=None):
     """
+    This is where d15N2 and d40Ar are calculated!!
+
     transient 1-d diffusion finite volume method
+
+    :param airdict: is specified in firn_air.py; it contains some information from AirConfig.json,
+                    but also e.g. the porosity (por_op, por_cl, por_tot), deltaM, w_firn, rho, z, etc.
+    :param c_vol:
+    :param tot_rho:
     :param z_edges:
     :param Z_P:
     :param nt:
@@ -58,7 +64,6 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
     phi_t = phi_0
 
     for i_time in range(nt):
-
         dZ = np.diff(z_edges)  # width of nodes
 
         deltaZ_u = np.diff(Z_P)
@@ -75,7 +80,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         # this part is for gas diffusion, which takes a bit more physics
         if airdict != None:
             Gamma_Po = Gamma_P * airdict['por_op']  # This is the diffusivity times the open porosity.
-
+            # this has to do sth with interface conductivity (Patankar 1980)
             Gamma_U = np.append(Gamma_Po[0], Gamma_Po[0: -1])
             Gamma_D = np.append(Gamma_Po[1:], Gamma_Po[-1])
             Gamma_u = 1 / ((1 - f_u) / Gamma_Po + f_u / Gamma_U)  # Patankar Eq. 4.11
@@ -91,8 +96,8 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
                 S_C_0 = 0.0
 
             elif airdict['gravity'] == 'on' and airdict['thermal'] == 'off':
-                S_C_0 = (-Gamma_d + Gamma_u) * (airdict['deltaM'] * GRAVITY / (R * airdict['Tz'])) / airdict[
-                    'dz']  # S_C is independent source term in Patankar
+                S_C_0 = (-Gamma_d + Gamma_u) * (airdict['deltaM'] * GRAVITY / (R * airdict['Tz'])) / airdict['dz']
+                # S_C is independent source term in Patankar
 
             elif airdict['gravity'] == 'on' and airdict['thermal'] == 'on':
                 # dTdz    = np.gradient(airdict['Tz'])/airdict['dz']
@@ -102,8 +107,6 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
                 S_C_0 = Gamma_del * (-(airdict['deltaM'] * GRAVITY / (R * airdict['Tz'])) + (airdict['omega'] * dTdz)) / \
                         airdict['dz']  # should thermal still work in LIZ? if so use d_eddy+diffu
                 # S_C_0[S_C_0<0]=1.e-40
-                print('Gamma_del: ', Gamma_del)
-                print('dTdz: ', dTdz)
 
             else:
                 print('Error at in solver.py at 119')
@@ -114,8 +117,13 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 
             rho_edges = np.interp(z_edges, Z_P, airdict['rho'])
 
+            t_before = t.time_ns()
             w_edges = w(airdict, z_edges, rho_edges, Z_P,
                         dZ)  # advection term (upward relative motion due to porosity changing)
+            t_after = t.time_ns()
+            total_time_nanoseconds = t_after - t_before
+            all_times = open('all_times.txt', 'a+')
+            all_times.write(str(total_time_nanoseconds) + '\n')
 
             w_p = np.interp(Z_P, z_edges, w_edges)  # Units m/s
             w_edges[z_edges > airdict['z_co']] = 0.0
@@ -198,7 +206,6 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         a_P = a_U + a_D + a_P_0
 
     if airdict != None:
-        print('phi_t: ', phi_t)
         return phi_t, w_p
     else:
         return phi_t
@@ -210,7 +217,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 
 
 def transient_solve_EN(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, g_liq, deltaH):
-    '''
+    """
     transient 1-d diffusion finite volume method for enthalpy
 
     :param z_edges:
@@ -229,7 +236,7 @@ def transient_solve_EN(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
     The source terms S_P and S_C come from the linearization described
     in Voller and Swaminathan, 1991, equations 31 and 32.
     and Voller, Swaminathan, and Thomas, 1990, equation 61
-    '''
+    """
 
     phi_t = phi_0.copy()
     g_liq_old = g_liq.copy()
@@ -321,7 +328,7 @@ def transient_solve_EN(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 
 
 ###################################
-### end transient_solve_EN ########
+# ## end transient_solve_EN #######
 ###################################
 
 '''
@@ -331,9 +338,9 @@ Works, but consider to be in beta
 
 
 def w(airdict, z_edges, rho_edges, Z_P, dZ):
-    '''
-    Function for downward advection of air and also calculates total air content. 
-    '''
+    """
+    Function for downward advection of air and also calculates total air content.
+    """
     if airdict['advection_type'] == 'Darcy':
         por_op_edges = np.interp(z_edges, airdict['z'], airdict['por_op'])
         T_edges = np.interp(z_edges, airdict['z'], airdict['Tz'])
@@ -371,7 +378,9 @@ def w(airdict, z_edges, rho_edges, Z_P, dZ):
         Xi = np.zeros((len(op_ind2), len(op_ind2)))
         Xi_up = por_op_edges[op_ind2] / np.reshape(por_op_edges[op_ind2], (-1, 1))
         Xi_down = (1 + np.log(np.reshape(w_firn_edges[op_ind2], (-1, 1)) / w_firn_edges[op_ind2]))
-        Xi = Xi_up / Xi_down  # Equation 5.10 in Christo's thesis; Xi[i,j] is the pressure increase (ratio) for bubbles at depth[i] that were trapped at depth[j]
+        # Equation 5.10 in Christo's thesis; Xi[i,j] is the pressure increase (ratio) for bubbles at depth[i]
+        # that were trapped at depth[j]
+        Xi = Xi_up / Xi_down
 
         integral_matrix = (Xi.T * dscl[op_ind2] * C[op_ind2]).T
         integral_matrix_sum = integral_matrix.sum(axis=1)
@@ -385,7 +394,7 @@ def w(airdict, z_edges, rho_edges, Z_P, dZ):
         flux = w_firn_edges[co_ind - 1] * p_ratio[co_ind - 1] * por_cl_edges[co_ind - 1]
 
         velocity = np.minimum(w_firn_edges,
-                              ((flux + 1e-10 - w_firn_edges * p_ratio * por_cl_edges) / ((por_op_edges + 1e-10 * C))))
+                              ((flux + 1e-10 - w_firn_edges * p_ratio * por_cl_edges) / (por_op_edges + 1e-10 * C)))
 
         # velocity            = (flux + 1e-10 - w_firn_edges * p_ratio * por_cl_edges) / ((por_op_edges + 1e-10 * C))
         # velocity = flux / p_star# / airdict['dt']
@@ -413,13 +422,13 @@ def w(airdict, z_edges, rho_edges, Z_P, dZ):
 
 
 def A(P):
-    '''Power-law scheme, Patankar eq. 5.34'''
+    """Power-law scheme, Patankar eq. 5.34"""
     A = np.maximum((1 - 0.1 * np.abs(P)) ** 5, np.zeros(np.size(P)))
     return A
 
 
 def F_upwind(F):
-    ''' Upwinding scheme '''
+    """ Upwinding scheme """
     F_upwind = np.maximum(F, 0)
     return F_upwind
 

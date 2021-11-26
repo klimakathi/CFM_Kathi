@@ -42,6 +42,7 @@ class FirnPhysics:
         bdot_mean units are m I.E./year
         bdotSec units are m I.E./time step
         """
+
         for k, v in list(PhysParams.items()):
             setattr(self, k, v)
         self.RD = {}  # RD = Return Dictionary, set up this way so that more things can be returned easily if needed.

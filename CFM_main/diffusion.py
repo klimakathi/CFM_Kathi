@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-'''
+"""
 code to handle diffusion (heat, enthalpy)
 calls solver
 Draws from Numerical Heat Transfer and Heat Flow (Patankar, 1980)
 Enthalpy from Voller, Swaminathan, and Thomas (1990)
 Isotope diffusion now has its own class.
-'''
+"""
 
 from solver import transient_solve_TR
 # from solver import transient_solve_EN_old
@@ -17,14 +17,14 @@ from scipy import interpolate
 
 
 def firnConductivity(self, iii, K_ice):
-    '''
+    """
     Function to set the firn's thermal conductivity
     based on one of a number of parameterizations.
 
     Choose your favorite!
     Default is Calonne et al. 2019.
     References are provided at the end of this script.
-    '''
+    """
     if self.c['conductivity'] == 'Calonne2019':  # Calonne et al. 2019
         rho_transition = 450.0  # [kg/m^3]
         a = 0.02  # [m^3/kg]
@@ -147,9 +147,9 @@ def heatDiff(self, iii):
     return self.Tz, self.T10m
 
 
-##########################
-### end heat diffusion ###
-##########################
+############################
+# -- end heat diffusion -- #
+############################
 
 def enthalpyDiff(self, iii):
     '''

@@ -50,6 +50,8 @@ from sublim import sublim  # VV
 from ModelOutputs import ModelOutputs
 
 
+all_times = open('all_times.txt', 'w')
+
 class FirnDensityNoSpin:
     """
     Class for the main, transient model run.
@@ -124,7 +126,6 @@ class FirnDensityNoSpin:
 
         # read in initial depth, age, density, temperature from spin-up results
         initDepth = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'depthSpin')
-        print('initDepth: ', initDepth)
         initAge = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'ageSpin')
         initDensity = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'densitySpin')
         initTemp = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'tempSpin')
@@ -148,9 +149,7 @@ class FirnDensityNoSpin:
 
         # set up the initial age and density of the firn column
         self.age = initAge[1:]
-        print('initAge: ', initAge)
         self.rho = initDensity[1:]
-        print('initDensity: ', initDensity)
 
         # set up model grid --------------------------------------------------------------------------------------------
         self.z = initDepth[1:]
@@ -197,12 +196,11 @@ class FirnDensityNoSpin:
                 start_ind = np.where(climateTS['time'] >= updatedStartDate)[0][0]
                 input_temp = climateTS['TSKIN'][start_ind:]
                 input_year_temp = climateTS['time'][start_ind:]
-                print(input_temp)
 
             else:
                 input_temp, input_year_temp = read_input(
                     os.path.join(self.c['InputFileFolder'], self.c['InputFileNameTemp']), updatedStartDate)
-                print(input_year_temp)
+
             if input_temp[0] < 0.0:
                 input_temp = input_temp + K_TO_C
             input_temp[input_temp > T_MELT] = T_MELT
@@ -291,12 +289,10 @@ class FirnDensityNoSpin:
             # self.modeltime  = np.linspace(yr_start, yr_end, self.stp + 1)   # vector of time of each model step
 
             self.modeltime = np.linspace(yr_start, yr_end, self.stp + 1)[:-1]
+
             # TODO: find out where this was used also in other parts of the code...
             #  added ...self.stp + 1)[:-1]    (to keep number of time steps the same)
-            print('modeltime: ', self.modeltime)
-            print('self.stp: ', self.stp)
-            print(yr_start)
-            print(yr_end)
+
             # this would give us sth like: [-2000.0, -1999.0, ..., 0.0];
             # actually not quite!! we actually need self.stp + 1, when using np.linspace!!!
 
@@ -304,8 +300,6 @@ class FirnDensityNoSpin:
             self.t = (1.0 / self.c['stpsPerYear']) * np.ones_like(self.dt)
             init_time = input_year_temp[0]
             # TODO: do not quite understand the init_time = -9999
-            print('input_year_temp: ', input_year_temp)
-            print(self.t)
 
         elif self.c['timesetup'] == 'exact':
             # print('"Exact" time setup will not work properly if input forcing does not all have the same time')
@@ -367,7 +361,7 @@ class FirnDensityNoSpin:
         Tsf = interpolate.interp1d(input_year_temp, input_temp, int_type,
                                    fill_value='extrapolate')  # interpolation function
         self.Ts = Tsf(self.modeltime)  # surface temperature interpolated to model time
-        # print('Ts: ', self.Ts)
+
         if self.c['SeasonalTcycle']:  # impose seasonal temperature cycle of amplitude 'TAmp'
             if self.c['SeasonalThemi'] == 'north':
                 self.Ts = self.Ts - self.c['TAmp'] * (
@@ -521,7 +515,6 @@ class FirnDensityNoSpin:
             print('You should add new variable "TWriteStart" to the json file!')
             print('Arbitrarily starting writing at 1980.0. See line 243 in firn_density_nospin.py')
         self.TWrite = self.modeltime[Tind::self.c['TWriteInt']]
-        print('TWrite: ', self.TWrite)
         if self.TWrite[-1] != self.modeltime[-1]:
             print('Adding last time step to Twrite')
             self.TWrite = np.append(self.TWrite, self.modeltime[-1])
@@ -819,7 +812,6 @@ class FirnDensityNoSpin:
         ####################################
 
         print('modeltime', self.modeltime[0], self.modeltime[-1])
-        # print('stp',self.stp)
         for iii in range(self.stp):
             mtime = self.modeltime[iii]
             self.D_surf[iii] = iii
@@ -1078,8 +1070,8 @@ class FirnDensityNoSpin:
                 tif = interpolate.interp1d(self.manualT_dep, self.manualT_temp[:, iii], kind='cubic')
                 self.Tz = tif(self.z)
 
-            elif (not self.c[
-                'heatDiff'] and not self.MELT):  # user says no heat diffusion, so just set the temperature of the new box on top.
+            elif (not self.c['heatDiff'] and not self.MELT):
+                # user says no heat diffusion, so just set the temperature of the new box on top.
                 self.Tz = self.Ts[iii] * np.ones_like(self.Tz)
                 if iii == 0:
                     print('warning:diffusion off, setting temp to Ts[iii]')
@@ -1213,7 +1205,6 @@ class FirnDensityNoSpin:
             # write results as often as specified in the init method ##
             # ----------------------------------------------------------------------------------------------------------
             if mtime in self.TWrite:
-                print(mtime)
                 ind = np.where(self.TWrite == mtime)[0][0]
                 mtime_plus1 = self.TWrite[ind]
 

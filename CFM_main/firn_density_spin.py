@@ -241,12 +241,7 @@ class FirnDensitySpin:
             pass
 
         self.age, self.rho = hl_analytic(self.c['rhos0'], self.z, THL, AHL)  # self.age is in age in seconds
-        print('THL: ', THL)
-        print('AHL: ', AHL)
-        print('z: ', self.z)
-        print('HL age:', self.age)
-        print('HL rho:', self.rho)
-        print(np.shape(self.age), np.shape(self.rho))
+
         # try:
         self.doublegrid = self.c['doublegrid']
         # keeps a high resolution grid near surface and lower-resolution grid at greater depth
@@ -432,6 +427,8 @@ class FirnDensitySpin:
         # --------------------------------------------------------------------------------------------------------------
         # START TIME-STEPPING LOOP
         # --------------------------------------------------------------------------------------------------------------
+        # TODO: insert a txt file to write things into it...
+        self.f_txt = open("dTdz_txt.txt", "a")
 
         for iii in range(self.stp):  # remember: self.stp is the number of total time steps
             # create dictionary of the parameters that get passed to physics
@@ -621,9 +618,6 @@ class FirnDensitySpin:
                 # ###
 
                 self.rho_time = np.concatenate(([self.t * iii + 1], self.rho))
-                print('rho_time: ', self.rho_time)
-                print(np.shape(self.rho_time))
-                print('time step iii: ', iii)
                 self.Tz_time = np.concatenate(([self.t * iii + 1], self.Tz))
                 self.age_time = np.concatenate(([self.t * iii + 1], self.age))
                 self.z_time = np.concatenate(([self.t * iii + 1], self.z))

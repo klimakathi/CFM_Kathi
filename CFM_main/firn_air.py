@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-'''
+"""
 code to deal with modeling firn-air diffusion
-'''
+"""
 
 import numpy as np
 from solver import solver
@@ -18,9 +18,9 @@ import os
 
 class FirnAir:
     def __init__(self, air_config, Gs, z, modeltime, Tz, rho, dz, gaschoice, bdot):
-        '''
+        """
         Initialize Firn Air class
-        '''
+        """
 
         self.cg = air_config
         self.Gs = Gs
@@ -64,13 +64,13 @@ class FirnAir:
         else:
             Tz_d = self.Tz
 
-        # Parameterizations for diffusivity #####
+        # Parameterization for diffusivity #####
         if self.cg['Diffu_param'] == "Severinghaus":  # Use Severinghaus relationship from Cuffey and Paterson
             diffu_full = self.gam_x * self.d_0 * (
                         (P_0 / self.p_a) * (Tz_d / 273.15) ** 1.85 * (2.00 * (1 - (self.rho / RHO_I)) - 0.167))
 
-        elif self.cg[
-            'Diffu_param'] == "Schwander":  # Use Schwander 1988, Eq. 2 Diffusivity (does not work very well) use 4e2 for d_0
+        elif self.cg['Diffu_param'] == "Schwander":
+            # Use Schwander 1988, Eq. 2 Diffusivity (does not work very well) use 4e2 for d_0
             k_sch = P_0 / self.p_a * (Tz_d / 253.16) ** 1.85  # Constant given in Schwander
             diffu_full = self.gam_x * k_sch * (23.7 * self.por_tot - 2.84) / (
                         1000 ** 2)  # 1/1000**2 is unit conversion.
@@ -82,8 +82,8 @@ class FirnAir:
             perm = 10 ** -7.29 * self.por_op ** 3.71
             diffu_full = self.d_0 * self.gam_x * (perm / (10 ** -6.973)) ** (1 / 2.79)
 
-        elif self.cg['Diffu_param'] == "Witrant":  ### Use Witrant, 2012
-            diffu_full = self.d_0 * (2.5 * self.por_op - 0.31) * (Tz_d / 273.15) ** (1.8) * P_0 / self.p_a
+        elif self.cg['Diffu_param'] == "Witrant":  # Use Witrant, 2012
+            diffu_full = self.d_0 * (2.5 * self.por_op - 0.31) * (Tz_d / 273.15) ** 1.8 * P_0 / self.p_a
             if self.bdot_t < 0.1:
                 # d_thresh = 3.16e-8
                 d_thresh = 1.
@@ -94,7 +94,7 @@ class FirnAir:
             thresh_ind = np.where(diffu_full * S_PER_YEAR <= d_thresh)[0]
             z_thresh = self.z[thresh_ind[0]]
 
-            diffu_t = (d_thresh - (1e-2)) / (1 + np.exp(50 * (self.z - (self.z_co + z_thresh) / 2) / self.z_co)) + (
+            diffu_t = (d_thresh - 1e-2) / (1 + np.exp(50 * (self.z - (self.z_co + z_thresh) / 2) / self.z_co)) + (
                 1e-2)
 
             diffu_full[thresh_ind] = diffu_t[thresh_ind] / S_PER_YEAR

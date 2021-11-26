@@ -29,7 +29,6 @@ def hl_analytic(rhos0, h, THL, AHL):
     """
 
     hSize = np.size(h)
-    print('hSize:', hSize)
     rhos = rhos0 / 1000.0
 
     A = AHL * RHO_I_MGM
