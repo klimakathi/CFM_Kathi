@@ -112,15 +112,15 @@ class FirnAir:
 
             diffu_full = np.interp(self.z, h, diffu_full_data)
 
-        ###### Add in high diffusivity in convective zone and low diffusivity below LID     
-        ### Convective zone###
+        # Add in high diffusivity in convective zone and low diffusivity below LID
+        # --- Convective zone ---
         d_eddy = np.zeros(np.size(diffu_full))
         ind = np.nonzero(self.z < self.czd)
         d_eddy_surf = 2.426405E-5  # Kawamura, 2006
         # H_scale       = czd
         d_eddy_up = d_eddy_surf * np.exp(-1 * self.z / self.czd)
 
-        #### Lock-in zone physics ###
+        # --- Lock-in zone physics ---
         if self.cg['lockin']:
             LI_ind = np.where(diffu_full <= 1e-9)[0][0]
 
@@ -133,8 +133,9 @@ class FirnAir:
             # diffu_full[ind4] = diffu_full[ind4]-diffu_full[ind4[-1]] #re-scale diffusivity so it becomes zero at LID
 
             d_eddy[ind3] = diffu_full[ind3]  # set eddy diffusivity in LID equal to diffusivity at LID
-            diffu_full[
-                ind] = 1e-20  # set molecular diffusivity equal to zero for "main" diffusivity after LID - eddy diffusivity term drives diffusion below
+            # set molecular diffusivity equal to zero for "main" diffusivity after LID -
+            # eddy diffusivity term drives diffusion below
+            diffu_full[ind] = 1e-20
             d_eddy = d_eddy + d_eddy_up  # make eddy diffusivity vector have convective and lock-in zone values
 
         else:
@@ -150,18 +151,19 @@ class FirnAir:
         diffu_full[diffu_full <= 0] = 1.e-40
 
         i4 = np.where(diffu_full == 1.e-40)[0][0]
-        diffu_full[
-        i4:i4 + 3] = 1e-40  # a single layer of low diffusivity is numerically unstable, so ensure that low-diffusivity is at least 3 layers thick.
+        # a single layer of low diffusivity is numerically unstable, so ensure that low-diffusivity
+        # is at least 3 layers thick.
+        diffu_full[i4:i4 + 3] = 1e-40
 
         diffu = diffu_full
 
         return diffu, d_eddy  # , dd
 
     def porosity(self):  # ,rho,T
-        '''
+        """
         Calculate the total, open, and closed porosity.
         co is close-off, cl is closed
-        '''
+        """
 
         indT = np.where(self.z > 20)[0][0]
         if self.cg['runtype'] == 'steady':
@@ -172,10 +174,9 @@ class FirnAir:
             self.bcoRho = 1 / (1 / (RHO_I) + self.Tz[indT] * 6.95E-7 - 4.3e-5)  # Martinerie mean close-off density
             # self.bcoRho = 825.3
 
-        ### Porosity, from Goujon et al., 2003, equations 9 and 10
-        self.por_tot = 1 - self.rho / RHO_I  # Total porosity
-        print('rho: ', self.rho)
+        # Porosity, from Goujon et al., 2003, equations 9 and 10
 
+        self.por_tot = 1 - self.rho / RHO_I  # Total porosity
         self.por_co = 1 - self.bcoRho / RHO_I  # mean close-off porosity
         alpha = 0.37  # constant determined in Goujon
         self.por_cl = np.zeros_like(self.por_tot)
@@ -211,10 +212,10 @@ class FirnAir:
 
     def firn_air_diffusion(self, AirParams, iii):
 
-        '''
+        """
         Solve the diffusion equation.
         Calls solver.py
-        '''
+        """
 
         for k, v in list(AirParams.items()):
             setattr(self, k, v)
@@ -226,7 +227,7 @@ class FirnAir:
         z_edges1 = self.z[0:-1] + np.diff(self.z) / 2
         z_edges = np.concatenate(([self.z[0]], z_edges1, [self.z[-1]]))
         z_P_vec = self.z
-        print('z_P_vec: ', z_P_vec)
+
         # if (iii>100 and iii<110):
         #     print('z_P',z_P_vec[0:5])
         #     print('len p', len(z_P_vec))
@@ -307,7 +308,7 @@ class FirnAir:
         self.Gz, w_p = transient_solve_TR(z_edges, z_P_vec, nt, self.dt, self.diffu, phi_0, nz_P, nz_fv, phi_s,
                                           self.rho, c_vol, airdict)
         self.Gz = np.concatenate(([self.Gs[iii]], self.Gz[:-1]))
-        print('shape Gz:', np.shape(self.Gz))
+
 
         ind_LID = np.where(self.z >= self.LID)[0]
         self.gas_age[self.gas_age > 0] = self.gas_age[self.gas_age > 0] + self.dt / S_PER_YEAR
@@ -317,14 +318,13 @@ class FirnAir:
         self.gas_age[ii2] = 15
 
         # print('diffu',self.diffu[0:10])
-        print('Gz: ', self.Gz)
         return self.Gz, self.diffu, w_p, self.gas_age
 
 
 def gasses(gaschoice, T, p_a, M_air):
-    '''
+    """
     Function to set up specifics for different gasses.
-    '''
+    """
 
     # d_0 = 5.e2 # Free air diffusivity, CO2, m**2/yr Schwander, 1988 reports 7.24 mm**2/s =379 m**2/yr
     d_0 = 1.6e-5  # m^2/s :wikipedia value. changed 9/27/13  Schwander, 1988 reports 7.24 mm**2/s = 7.24e-6 m**2/yr
@@ -446,4 +446,4 @@ def gasses(gaschoice, T, p_a, M_air):
     d_0 = D_ref_CO2
 
     return gam_x, M, deltaM, d_0, omega
-    ### D_x is the free-air diffusivity relative to CO2.
+    # D_x is the free-air diffusivity relative to CO2.

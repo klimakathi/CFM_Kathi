@@ -567,8 +567,9 @@ class FirnPhysics:
         QBarnola = 60.0e3
         closeOff = 800.0
 
-        self.rho[
-            self.rho > RHO_I] = RHO_I  # The Barnola model will go a fraction over the ice density (oself.RDer 10^-3), so this stops that.
+        # The Barnola model will go a fraction over the ice density (self.RDer 10^-3),
+        # so this stops that.
+        self.rho[self.rho > RHO_I] = RHO_I
         drho_dt = np.zeros(self.gridLen)
         viscosity = np.zeros(self.gridLen)
         D = self.rho / RHO_I
@@ -578,42 +579,42 @@ class FirnPhysics:
         sigmaEff = self.sigma
         # nBa[sigmaEff<1.0e5]=1.0
 
-        ### Zone 1 ###
+        # --- Zone 1 -------------------------------------------------
         A_instant = self.bdotSec[self.iii] * self.steps * S_PER_YEAR * RHO_I_MGM
         A_mean_1 = self.bdot_mean[self.rho < RHO_1] * RHO_I_MGM
 
         if self.bdot_type == 'instant':
             drho_dt[self.rho < RHO_1] = k1 * np.exp(-Q1 / (R * self.Tz[self.rho < RHO_1])) * (
-                        RHO_I_MGM - self.rho[self.rho < RHO_1] / 1000) * A_instant ** aHL * 1000 / S_PER_YEAR
+                    RHO_I_MGM - self.rho[self.rho < RHO_1] / 1000) * A_instant ** aHL * 1000 / S_PER_YEAR
         elif self.bdot_type == 'mean':
             drho_dt[self.rho < RHO_1] = k1 * np.exp(-Q1 / (R * self.Tz[self.rho < RHO_1])) * (
-                        RHO_I_MGM - self.rho[self.rho < RHO_1] / 1000) * A_mean_1 ** aHL * 1000 / S_PER_YEAR
+                    RHO_I_MGM - self.rho[self.rho < RHO_1] / 1000) * A_mean_1 ** aHL * 1000 / S_PER_YEAR
 
-        ### Zone 2 ###
+        # --- Zone 2 -------------------------------------------------
         condition_zn2 = ((self.rho >= RHO_1) & (self.rho <= closeOff))
         fe = 10.0 ** (alphaBarnola * (self.rho[condition_zn2] / 1000) ** 3. + betaBarnola * (
-                    self.rho[condition_zn2] / 1000) ** 2. + deltaBarnola * self.rho[
+                self.rho[condition_zn2] / 1000) ** 2. + deltaBarnola * self.rho[
                           condition_zn2] / 1000 + gammaBarnola)
         drho_dt[condition_zn2] = self.rho[condition_zn2] * A0[condition_zn2] * np.exp(
             -QBarnola / (R * self.Tz[condition_zn2])) * fe * (sigmaEff[condition_zn2] ** nBa[condition_zn2])
 
-        # zone 3
+        # --- Zone 3 -------------------------------------------------
         condition_zn3 = (self.rho > closeOff)
         fs = (3. / 16.) * (1 - self.rho[condition_zn3] / RHO_I) / (
-                    1 - (1 - self.rho[condition_zn3] / RHO_I) ** (1. / 3.)) ** 3.
+                1 - (1 - self.rho[condition_zn3] / RHO_I) ** (1. / 3.)) ** 3.
         drho_dt[condition_zn3] = self.rho[condition_zn3] * A0[condition_zn3] * np.exp(
             -QBarnola / (R * self.Tz[condition_zn3])) * fs * (sigmaEff[condition_zn3] ** nBa[condition_zn3])
 
-        viscosity[self.rho < RHO_1] = (self.rho[self.rho < RHO_1] * self.sigma[self.rho < RHO_1]) / (2) / drho_dt[
+        viscosity[self.rho < RHO_1] = (self.rho[self.rho < RHO_1] * self.sigma[self.rho < RHO_1]) / 2 / drho_dt[
             self.rho < RHO_1]
-        viscosity[self.rho >= RHO_1] = (self.rho[self.rho >= RHO_1] * self.sigma[self.rho >= RHO_1]) / (2) / drho_dt[
+        viscosity[self.rho >= RHO_1] = (self.rho[self.rho >= RHO_1] * self.sigma[self.rho >= RHO_1]) / 2 / drho_dt[
             self.rho >= RHO_1]
 
         self.RD['drho_dt'] = drho_dt
         self.RD['viscosity'] = viscosity
         return self.RD
 
-    ### end Barnola_1991 ###
+    # end Barnola_1991 ###
     ########################
 
     def Morris_HL_2014(self):
@@ -661,7 +662,7 @@ class FirnPhysics:
         viscosity = np.zeros(self.gridLen)
 
         drho_dt[self.rho < RHO_1] = (kMorris / (RHO_W_KGM * GRAVITY)) * ((RHO_I - self.rho[self.rho < RHO_1])) * (
-                    1 / self.Hx[self.rho < RHO_1]) * np.exp(-1 * self.QMorris / (R * self.Tz[self.rho < RHO_1])) * \
+                1 / self.Hx[self.rho < RHO_1]) * np.exp(-1 * self.QMorris / (R * self.Tz[self.rho < RHO_1])) * \
                                     self.sigma[self.rho < RHO_1] * (1 - M0bar * m)
 
         # Use HL Dynamic for zone 2 b/c Morris does not specify zone 2.
@@ -672,10 +673,10 @@ class FirnPhysics:
         A_mean_2 = self.bdot_mean[self.rho >= RHO_1] * RHO_I_MGM
         if self.bdot_type == 'instant':
             drho_dt[self.rho >= RHO_1] = k2 * np.exp(-Q2 / (R * self.Tz[self.rho >= RHO_1])) * (
-                        RHO_I_MGM - self.rho[self.rho >= RHO_1] / 1000) * A_instant ** bHL * 1000 / S_PER_YEAR
+                    RHO_I_MGM - self.rho[self.rho >= RHO_1] / 1000) * A_instant ** bHL * 1000 / S_PER_YEAR
         elif self.bdot_type == 'mean':
             drho_dt[self.rho >= RHO_1] = k2 * np.exp(-Q2 / (R * self.Tz[self.rho >= RHO_1])) * (
-                        RHO_I_MGM - self.rho[self.rho >= RHO_1] / 1000) * A_mean_2 ** bHL * 1000 / S_PER_YEAR
+                    RHO_I_MGM - self.rho[self.rho >= RHO_1] / 1000) * A_mean_2 ** bHL * 1000 / S_PER_YEAR
 
         viscosity[self.rho < RHO_1] = -(self.rho[self.rho < RHO_1] * self.sigma[self.rho < RHO_1]) / (2) / drho_dt[
             self.rho < RHO_1]
@@ -789,7 +790,7 @@ class FirnPhysics:
         n = 3.0
 
         rhoi2cgs = .9165 * (
-                    1. - 1.53e-4 * (self.T_mean[self.iii] - 273.15))  # Density of ice, temperature dependent, g/cm^3
+                1. - 1.53e-4 * (self.T_mean[self.iii] - 273.15))  # Density of ice, temperature dependent, g/cm^3
         rhoi2 = rhoi2cgs * 1000.0  # density of ice, kg/m^3
 
         D = self.rho / rhoi2  # Relative density
@@ -815,11 +816,11 @@ class FirnPhysics:
         lp = (D / D0) ** (1.0 / 3.0)  # A6
         Zg = Z0g + ccc * (lp - 1.0)  # A7
         lpp_n = (4.0 * Z0g * (lp - 1.0) ** 2.0 * (2.0 * lp + 1.0) + ccc * (lp - 1.0) ** 3.0 * (
-                    3.0 * lp + 1.0))  # A8, numerator
+                3.0 * lp + 1.0))  # A8, numerator
         lpp_d = (12.0 * lp * (4.0 * lp - 2.0 * Z0g * (lp - 1.0) - ccc * (lp - 1.0) ** 2.0))  # A8, denominator
         lpp = lp + (lpp_n / lpp_d)  # A8 (l double prime)
         a = (np.pi / (3.0 * Zg * lp ** 2.0)) * (
-                    3.0 * (lpp ** 2.0 - 1.0) * Z0g + lpp ** 2.0 * ccc * (2.0 * lpp - 3.0) + ccc)  # A9
+                3.0 * (lpp ** 2.0 - 1.0) * Z0g + lpp ** 2.0 * ccc * (2.0 * lpp - 3.0) + ccc)  # A9
         sigmastar = (4.0 * np.pi * sigma_bar) / (a * Zg * D)  # A4
 
         # gamma_An    = (5.3*A[ind1] * (Dms**2*D0)**(1.0/3.0) * (a[ind1]/np.pi)**(1.0/2.0) * (sigmastar[ind1]/3.0)**n) / ((sigma_bar[ind1]/(Dms**2))*(1-(5.0/3.0*Dms))) #this is the analytic solution of what gamma should be by combining equations A1 and A3 and solving for gamma (densification rate should be smooth at the zone 1/2 transition). Does not get used.
@@ -832,9 +833,9 @@ class FirnPhysics:
             self.Gamma_Gou = self.Gamma_old_Gou
 
         dDdt[0:ind1 + 1] = self.Gamma_Gou * (sigma_bar[0:ind1 + 1]) * (1.0 - (5.0 / 3.0) * D[0:ind1 + 1]) / (
-                    (D[0:ind1 + 1]) ** 2.0)
+                (D[0:ind1 + 1]) ** 2.0)
         dDdt[ind1 + 1:] = 5.3 * A[ind1 + 1:] * (((D[ind1 + 1:] ** 2.0) * D0) ** (1 / 3.)) * (a[ind1 + 1:] / np.pi) ** (
-                    1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
+                1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
         gfrac = 0.03
         gam_div = 1 + gfrac  # change this if want: making it larger will make the code run faster. Must be >=1.
 
@@ -844,9 +845,9 @@ class FirnPhysics:
             while dDdt[ind1] < dDdt[ind1 + 1]:
                 self.Gamma_Gou = self.Gamma_Gou * (gam_div)
                 dDdt[0:ind1 + 1] = self.Gamma_Gou * (sigma_bar[0:ind1 + 1]) * (1.0 - (5.0 / 3.0) * D[0:ind1 + 1]) / (
-                            (D[0:ind1 + 1]) ** 2.0)
+                        (D[0:ind1 + 1]) ** 2.0)
                 dDdt[ind1 + 1:] = 5.3 * A[ind1 + 1:] * (((D[ind1 + 1:] ** 2.0) * D0) ** (1 / 3.)) * (
-                            a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
+                        a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
 
                 cc += 1
                 if cc > 10000:
@@ -860,9 +861,9 @@ class FirnPhysics:
 
             self.Gamma_Gou = self.Gamma_Gou / (1 + gfrac / 2.0)
             dDdt[0:ind1 + 1] = self.Gamma_Gou * (sigma_bar[0:ind1 + 1]) * (1.0 - (5.0 / 3.0) * D[0:ind1 + 1]) / (
-                        (D[0:ind1 + 1]) ** 2.0)
+                    (D[0:ind1 + 1]) ** 2.0)
             dDdt[ind1 + 1:] = 5.3 * A[ind1 + 1:] * (((D[ind1 + 1:] ** 2.0) * D0) ** (1 / 3.)) * (
-                        a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
+                    a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
             counter += 1
 
             if counter > 10000:
@@ -898,8 +899,8 @@ class FirnPhysics:
         ind3 = ind2 + 10
 
         dDdt[D > Dm23] = 2. * A[D > Dm23] * (
-                    (D[D > Dm23] * (1 - D[D > Dm23])) / (1 - (1 - D[D > Dm23]) ** (1 / n)) ** n) * (
-                                     2 * sigmaEff[D > Dm23] / n) ** 3.0
+                (D[D > Dm23] * (1 - D[D > Dm23])) / (1 - (1 - D[D > Dm23]) ** (1 / n)) ** n) * (
+                                 2 * sigmaEff[D > Dm23] / n) ** 3.0
         Ad = 1.2e3 * np.exp(-Qgj / (R * self.Tz)) * 1.0e-1
         T34 = 0.98
         dDdt[D > T34] = 9 / 4 * Ad[D > T34] * (1 - D[D > T34]) * sigmaEff[D > T34]
@@ -938,7 +939,7 @@ class FirnPhysics:
         n = 3.0
 
         rhoi2cgs = .9165 * (
-                    1. - 1.53e-4 * (self.T_mean[self.iii] - 273.15))  # Density of ice, temperature dependent, g/cm^3
+                1. - 1.53e-4 * (self.T_mean[self.iii] - 273.15))  # Density of ice, temperature dependent, g/cm^3
         rhoi2 = rhoi2cgs * 1000.0  # density of ice, kg/m^3
 
         D = self.rho / rhoi2  # Relative density
@@ -969,11 +970,11 @@ class FirnPhysics:
         lp = (D / D0) ** (1.0 / 3.0)  # A6
         Zg = Z0g + ccc * (lp - 1.0)  # A7
         lpp_n = (4.0 * Z0g * (lp - 1.0) ** 2.0 * (2.0 * lp + 1.0) + ccc * (lp - 1.0) ** 3.0 * (
-                    3.0 * lp + 1.0))  # A8, numerator
+                3.0 * lp + 1.0))  # A8, numerator
         lpp_d = (12.0 * lp * (4.0 * lp - 2.0 * Z0g * (lp - 1.0) - ccc * (lp - 1.0) ** 2.0))  # A8, denominator
         lpp = lp + (lpp_n / lpp_d)  # A8 (l double prime)
         a = (np.pi / (3.0 * Zg * lp ** 2.0)) * (
-                    3.0 * (lpp ** 2.0 - 1.0) * Z0g + lpp ** 2.0 * ccc * (2.0 * lpp - 3.0) + ccc)  # A9
+                3.0 * (lpp ** 2.0 - 1.0) * Z0g + lpp ** 2.0 * ccc * (2.0 * lpp - 3.0) + ccc)  # A9
         sigmastar = (4.0 * np.pi * sigma_bar) / (a * Zg * D)  # A4
 
         # gamma_An    = (5.3*A[ind1] * (Dms**2*D0)**(1.0/3.0) * (a[ind1]/np.pi)**(1.0/2.0) * (sigmastar[ind1]/3.0)**n) / ((sigma_bar[ind1]/(Dms**2))*(1-(5.0/3.0*Dms))) #this is the analytic solution of what gamma should be by combining equations A1 and A3 and solving for gamma (densification rate should be smooth at the zone 1/2 transition). Does not get used.
@@ -986,9 +987,9 @@ class FirnPhysics:
             self.Gamma_Gou = self.Gamma_old_Gou
 
         dDdt[0:ind1 + 1] = self.Gamma_Gou * (sigma_bar[0:ind1 + 1]) * (1.0 - (5.0 / 3.0) * D[0:ind1 + 1]) / (
-                    (D[0:ind1 + 1]) ** 2.0)
+                (D[0:ind1 + 1]) ** 2.0)
         dDdt[ind1 + 1:] = 5.3 * A[ind1 + 1:] * (((D[ind1 + 1:] ** 2.0) * D0) ** (1 / 3.)) * (a[ind1 + 1:] / np.pi) ** (
-                    1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
+                1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
         gfrac = 0.03
         gam_div = 1 + gfrac  # change this if want: making it larger will make the code run faster. Must be >=1.
 
@@ -998,9 +999,9 @@ class FirnPhysics:
             while dDdt[ind1] < dDdt[ind1 + 1]:
                 self.Gamma_Gou = self.Gamma_Gou * (gam_div)
                 dDdt[0:ind1 + 1] = self.Gamma_Gou * (sigma_bar[0:ind1 + 1]) * (1.0 - (5.0 / 3.0) * D[0:ind1 + 1]) / (
-                            (D[0:ind1 + 1]) ** 2.0)
+                        (D[0:ind1 + 1]) ** 2.0)
                 dDdt[ind1 + 1:] = 5.3 * A[ind1 + 1:] * (((D[ind1 + 1:] ** 2.0) * D0) ** (1 / 3.)) * (
-                            a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
+                        a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
 
                 cc += 1
                 if cc > 10000:
@@ -1014,9 +1015,9 @@ class FirnPhysics:
 
             self.Gamma_Gou = self.Gamma_Gou / (1 + gfrac / 2.0)
             dDdt[0:ind1 + 1] = self.Gamma_Gou * (sigma_bar[0:ind1 + 1]) * (1.0 - (5.0 / 3.0) * D[0:ind1 + 1]) / (
-                        (D[0:ind1 + 1]) ** 2.0)
+                    (D[0:ind1 + 1]) ** 2.0)
             dDdt[ind1 + 1:] = 5.3 * A[ind1 + 1:] * (((D[ind1 + 1:] ** 2.0) * D0) ** (1 / 3.)) * (
-                        a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
+                    a[ind1 + 1:] / np.pi) ** (1.0 / 2.0) * (sigmastar[ind1 + 1:] / 3.0) ** n
             counter += 1
 
             if counter > 10000:
@@ -1052,8 +1053,8 @@ class FirnPhysics:
         ind3 = ind2 + 10
 
         dDdt[D > Dm23] = 2. * A[D > Dm23] * (
-                    (D[D > Dm23] * (1 - D[D > Dm23])) / (1 - (1 - D[D > Dm23]) ** (1 / n)) ** n) * (
-                                     2 * sigmaEff[D > Dm23] / n) ** 3.0
+                (D[D > Dm23] * (1 - D[D > Dm23])) / (1 - (1 - D[D > Dm23]) ** (1 / n)) ** n) * (
+                                 2 * sigmaEff[D > Dm23] / n) ** 3.0
         Ad = 1.2e3 * np.exp(-Qgj / (R * self.Tz)) * 1.0e-1
         T34 = 0.98
         dDdt[D > T34] = 9 / 4 * Ad[D > T34] * (1 - D[D > T34]) * sigmaEff[D > T34]
@@ -1224,8 +1225,8 @@ class FirnPhysics:
         # dr_dt[msk] = k0 * np.exp(-1*Q / (R * self.Tz[msk])) * (RHO_I - self.rho[msk]) * self.sigma[msk] / self.age[msk]
 
         dr_dt[self.rho >= RHO_1] = k2 * np.exp(-Q2 / (R * self.Tz[self.rho >= RHO_1])) * (
-                    RHO_I_MGM - self.rho[self.rho >= RHO_1] / 1000) * (
-                                   A_mean[self.rho >= RHO_1]) ** bHL * 1000 / S_PER_YEAR
+                RHO_I_MGM - self.rho[self.rho >= RHO_1] / 1000) * (
+                                       A_mean[self.rho >= RHO_1]) ** bHL * 1000 / S_PER_YEAR
 
         self.RD['drho_dt'] = dr_dt  # units are (kg m^-3) s^-1
         return self.RD
@@ -1460,7 +1461,7 @@ class FirnPhysics:
             # r2_surface = ((b0Lnw+b1Lnw*(self.Ts[self.iii]-K_TO_C) + b2Lnw*(self.bdot_mean[-1]*RHO_I/1000))*10**(-3))**2 # More accurate to use bdot_mean[-1] as value of mean accumulation ??
             # r2_surface = ((b0Lnw+b1Lnw*(self.T_mean[self.iii]-K_TO_C) + b2Lnw*(self.bdot_mean[-1]*RHO_I/1000))*10**(-3))**2 #VV
             r2_surface = ((b0Lnw + b1Lnw * (self.T_mean[self.iii] - K_TO_C) + b2Lnw * (
-                        self.bdot_av[self.iii] * RHO_I / 1000)) * 10 ** (-3)) ** 2  # VV
+                    self.bdot_av[self.iii] * RHO_I / 1000)) * 10 ** (-3)) ** 2  # VV
 
             # r2 = np.concatenate(([r2_surface], r2[:-1])) #VV commented
 
@@ -1496,7 +1497,7 @@ class FirnPhysics:
 
             if self.GrGrowPhysics == 'Katsushima':
                 dr2_dt = 1e-9 / (4 * (self.r2) ** 0.5) * np.minimum(2 / (np.pi) * (
-                            1.28e-8 + 4.22e-10 * (sat * ((1000 * (RHO_I - self.rho) / (self.rho * RHO_I)) * 100)) ** 3),
+                        1.28e-8 + 4.22e-10 * (sat * ((1000 * (RHO_I - self.rho) / (self.rho * RHO_I)) * 100)) ** 3),
                                                                     6.94e-8)
             elif self.GrGrowPhysics == 'Arthern':
                 dr2_dt = kgr * np.exp(-Eg / (R * self.Tz))
