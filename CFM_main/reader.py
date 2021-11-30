@@ -1,7 +1,7 @@
 #!usr/bin/env python
-'''
+"""
 Functions to read model inputs.
-'''
+"""
 
 import os
 import numpy as np
@@ -10,12 +10,12 @@ from constants import *
 import h5py
 
 def read_input(filename,StartDate=None):
-    '''
+    """
     Read in data from csv input files
     :param filename: name of the file which holds the accumulation rate data
     :return input_data: vector of field of interest (e.g. temperature, accumulation rate from a specified csv file
     :return input_year: corresponding time vector (in years)
-    '''
+    """
 
     spot = os.getcwd()
 

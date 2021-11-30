@@ -14,13 +14,13 @@ from constants import *
 
 
 def write_nospin_hdf5(self, Mout_dict, forcing_dict=None):
-    '''
-    Write the results fromt the main model run to hdf file.
+    """
+    Write the results from the main model run to hdf file.
     Parameters
     ----------
     Mout_dict: dict
         contains all of the model outputs; each key is the name of the output
-    '''
+    """
 
     f4 = h5py.File(os.path.join(self.c['resultsFolder'], self.c['resultsFileName']), 'w')
 
@@ -46,19 +46,22 @@ def write_nospin_hdf5(self, Mout_dict, forcing_dict=None):
 
     if forcing_dict:
         ks = list(forcing_dict)
-        ll = len(forcing_dict[ks[0]])
+        ll = len(forcing_dict[ks[0]]) - 1
+        lm = np.shape(self.modeltime)[0]
+
         forcing_out = np.zeros([ll, 5])
-        forcing_out[:, 0] = forcing_dict['dectime']
-        forcing_out[:, 1] = forcing_dict['TSKIN']
-        forcing_out[:, 2] = forcing_dict['BDOT']
+        forcing_out[:, 0] = forcing_dict['dectime'][: lm]
+        forcing_out[:, 1] = forcing_dict['TSKIN'][: lm]
+        forcing_out[:, 2] = forcing_dict['BDOT'][: lm]
+
         try:
             forcing_out[:, 3] = forcing_dict['SMELT']
         except:
-            forcing_out[:, 3] = -9999 * np.ones_like(forcing_dict['dectime'])
+            forcing_out[:, 3] = -9999 * np.ones_like(forcing_dict['dectime'][: lm])
         try:
             forcing_out[:, 4] = forcing_dict['RAIN']
         except:
-            forcing_out[:, 4] = -9999 * np.ones_like(forcing_dict['dectime'])
+            forcing_out[:, 4] = -9999 * np.ones_like(forcing_dict['dectime'][: lm])
         f4.create_dataset('forcing', data=forcing_out, dtype='float64')
 
     f4.close()

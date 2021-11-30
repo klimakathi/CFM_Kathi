@@ -10,7 +10,7 @@ from scipy.sparse import spdiags
 import scipy.sparse.linalg as splin
 from constants import *
 import sys
-
+import time as t
 
 def solver(a_U, a_D, a_P, b):
     """
