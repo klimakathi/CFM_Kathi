@@ -4,6 +4,7 @@ Functions to solve the diffusion equation
 """
 
 import numpy as np
+# import cupy as cp  # this is to use GPUs on the datacruncher and speed up the runs :)) exciting...
 from scipy import interpolate
 import scipy.integrate
 from scipy.sparse import spdiags
@@ -51,10 +52,10 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
     :param c_vol:
     :param tot_rho:
     :param z_edges:
-    :param Z_P:
+    :param Z_P: this is the same as self.z?
     :param nt:
     :param dt:
-    :param Gamma_P:
+    :param Gamma_P: firn conductivity K_firn, in Patankar denoted as k
     :param phi_0:
     :param nz_P:
     :param nz_fv:
@@ -74,6 +75,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         deltaZ_d = np.diff(Z_P)
         deltaZ_d = np.append(deltaZ_d, deltaZ_d[-1])
 
+        # these seem to be interpolation factors: ratio of distances associated with an interface
         f_u = 1 - (Z_P[:] - z_edges[0:-1]) / deltaZ_u[:]
         f_d = 1 - (z_edges[1:] - Z_P[:]) / deltaZ_d[:]
 
@@ -81,11 +83,12 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         # TODO: FINALLY!!!!! the gas diffusion!!!
         # this part is for gas diffusion, which takes a bit more physics
         if airdict != None:
-            Gamma_Po = Gamma_P * airdict['por_op']  # This is the diffusivity times the open porosity.
+            Gamma_Po = Gamma_P * airdict['por_op']  # This is the firn conductivity K_firn times the open porosity.
             # this has to do sth with interface conductivity (Patankar 1980)
             Gamma_U = np.append(Gamma_Po[0], Gamma_Po[0: -1])
             Gamma_D = np.append(Gamma_Po[1:], Gamma_Po[-1])
-            Gamma_u = 1 / ((1 - f_u) / Gamma_Po + f_u / Gamma_U)  # Patankar Eq. 4.11
+            # gives firn conductivity at interfaces u and d
+            Gamma_u = 1 / ((1 - f_u) / Gamma_Po + f_u / Gamma_U)  # Patankar Eq. 4.11 --> actually 4.9?
             Gamma_d = 1 / ((1 - f_d) / Gamma_Po + f_d / Gamma_D)
 
             d_eddy_P = airdict['d_eddy'] * airdict['por_op']
@@ -118,13 +121,13 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 
             rho_edges = np.interp(z_edges, Z_P, airdict['rho'])
 
-            t_before = t.time_ns()
+            # t_before = t.time_ns()
             w_edges = w(airdict, z_edges, rho_edges, Z_P,
                         dZ)  # advection term (upward relative motion due to porosity changing)
-            t_after = t.time_ns()
-            total_time_nanoseconds = t_after - t_before
-            all_times = open('all_times.txt', 'a+')
-            all_times.write(str(total_time_nanoseconds) + '\n')
+            # t_after = t.time_ns()
+            # total_time_nanoseconds = t_after - t_before
+            # all_times = open('all_times.txt', 'a+')
+            # all_times.write(str(total_time_nanoseconds) + '\n')
 
             w_p = np.interp(Z_P, z_edges, w_edges)  # Units m/s
             w_edges[z_edges > airdict['z_co']] = 0.0
@@ -141,7 +144,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             P_d = F_d / D_d
 
             op_ind = np.where(z_edges <= airdict['z_co'])[
-                0]  # indices of all nodes wiht open porosity (shallower than CO)
+                0]  # indices of all nodes with open porosity (shallower than CO)
             op_ind2 = np.where(z_edges <= airdict['z_co'] + 20)[0]  # a bit deeper
             co_ind = op_ind[-1]
 
