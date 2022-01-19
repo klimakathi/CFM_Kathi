@@ -44,6 +44,7 @@ def hl_analytic(rhos0, h, THL, AHL):
     t0_55 = 1 / (k0 * A) * np.log((RHO_I_MGM - rhos) / (RHO_I_MGM - RHO_1_MGM))
     # density at depth h in zone 1
     rho_h0 = (RHO_I_MGM * Z0) / (1 + Z0)   # eq 7 in Herron & Langway: rho at depth h for initial stage of densification
+    # calculate the age
     if np.max(rho_h0) >= RHO_I_MGM:
         t0 = np.zeros(hSize)
         for jj in range(hSize):

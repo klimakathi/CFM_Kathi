@@ -506,7 +506,7 @@ class FirnDensitySpin:
             self.age = np.concatenate(([0], self.age[:-1])) + self.dt[iii]
             self.rho = self.rho + self.dt[iii] * drho_dt
 
-            if self.THist:
+            if self.THist:  # only when using Morris physics
                 self.Hx = RD['Hx']
 
             ### update temperature grid and isotope grid if user specifies
