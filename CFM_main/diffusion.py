@@ -29,7 +29,7 @@ def firnConductivity(self, iii, K_ice):
         rho_transition = 450.0  # [kg/m^3]
         a = 0.02  # [m^3/kg]
         theta = 1 / (1 + np.exp(-2 * a * (self.rho - rho_transition)))
-        kref_firn = 2.107 + 0.003618 * (self.rho - RHO_I)  # equation (1) in Calonne2019: firn conductivity at -3°C
+        kref_firn = 2.107 + 0.003618 * (self.rho - RHO_I)
         kref_snow = 0.024 - 1.23e-4 * self.rho + 2.5e-6 * self.rho ** 2
         kref_i = 2.107  # [W/m/K]
         kref_a = 0.024  # [W/m/K]

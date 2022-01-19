@@ -51,7 +51,7 @@ from sublim import sublim  # VV
 from ModelOutputs import ModelOutputs
 
 
-# all_times = open('all_times.txt', 'w')
+all_times = open('all_times.txt', 'w')
 
 class FirnDensityNoSpin:
     """
@@ -219,10 +219,9 @@ class FirnDensityNoSpin:
             input_bdot_full = climateTS['BDOT']
 
         else:
-            print('yeah')
             input_bdot, input_year_bdot, input_bdot_full, input_year_bdot_full = read_input(
                 os.path.join(self.c['InputFileFolder'], self.c['InputFileNamebdot']), updatedStartDate)
-        # TODO: this is just to try writing a full BDOT file with 10000 time steps to output file...
+        #TODO: this is just to try writing a full BDOT file with 10000 time steps to output file...
         self.forcing_dict['BDOT'] = input_bdot_full
         #####################
 
@@ -388,8 +387,8 @@ class FirnDensityNoSpin:
             elif self.c['SeasonalThemi'] == 'south':
                 if self.c['coreless']:
                     self.Ts = self.Ts + self.c['TAmp'] * (
-                            np.cos(2 * np.pi * np.linspace(0, self.years, self.stp)) + 0.3 * np.cos(
-                        4 * np.pi * np.linspace(0, self.years, self.stp)))  # Coreless winter, from Orsi
+                                np.cos(2 * np.pi * np.linspace(0, self.years, self.stp)) + 0.3 * np.cos(
+                            4 * np.pi * np.linspace(0, self.years, self.stp)))  # Coreless winter, from Orsi
                 else:
                     self.Ts = self.Ts + self.c['TAmp'] * (
                         np.cos(2 * np.pi * np.linspace(0, self.years, self.stp)))  # This is basic for Antarctica
@@ -411,7 +410,7 @@ class FirnDensityNoSpin:
         self.bdot[self.bdot < 1e-6] = 0.0
 
         self.bdotSec = self.bdot / S_PER_YEAR / (
-                S_PER_YEAR / self.dt)  # accumulation at each time step (meters i.e. per second). gets multiplied by S_PER_YEAR later. (sort of hacky, I know)
+                    S_PER_YEAR / self.dt)  # accumulation at each time step (meters i.e. per second). gets multiplied by S_PER_YEAR later. (sort of hacky, I know)
 
         try:  # Rolling mean average surface temperature and accumulation rate (vector)
             # (i.e. the long-term average climate)
@@ -460,7 +459,7 @@ class FirnDensityNoSpin:
             ssf = interpolate.interp1d(input_year_snowmelt, input_snowmelt, int_type, fill_value='extrapolate')
             self.snowmelt = ssf(self.modeltime)
             self.snowmeltSec = self.snowmelt / S_PER_YEAR / (
-                    S_PER_YEAR / self.dt)  # melt for each time step (meters i.e. per second)
+                        S_PER_YEAR / self.dt)  # melt for each time step (meters i.e. per second)
             self.c['LWCheat'] = 'enthalpy'  # Filler for future testing.
 
             if self.c['RAIN'] == True:  ##VV use rain climatic input
@@ -844,7 +843,7 @@ class FirnDensityNoSpin:
                     self.Dcon, self.T_mean, self.T10m, self.r2 = mergesurf(self, self.c['merge_min'], iii)
                     print('merging1 at ', iii)
                 if (
-                        np.any(self.dz[2:] < self.c['merge_min'])):  # Then merge rest of the firn column
+                np.any(self.dz[2:] < self.c['merge_min'])):  # Then merge rest of the firn column
                     self.dz, self.z, self.gridLen, self.dx, self.rho, self.age, self.LWC, self.PLWC_mem, self.mass, self.mass_sum, self.sigma, self.bdot_mean, \
                     self.Dcon, self.T_mean, self.T10m, self.r2 = mergenotsurf(self, self.c['merge_min'], iii)
                     print('merging2 at ', iii)
@@ -1188,7 +1187,7 @@ class FirnDensityNoSpin:
                 massNew = self.bdotSec[iii] * S_PER_YEAR * RHO_I
                 self.mass = np.concatenate(([massNew], self.mass[:-1]))
                 self.compaction = np.append(0, (
-                        self.dz_old[0:self.compboxes - 1] - self.dzn[0:self.compboxes - 1]))  # /self.dt*S_PER_YEAR)
+                            self.dz_old[0:self.compboxes - 1] - self.dzn[0:self.compboxes - 1]))  # /self.dt*S_PER_YEAR)
                 # self.compaction = self.dz_old[0:self.compboxes] - self.dzn[0:self.compboxes]
                 if self.doublegrid:
                     self.gridtrack = np.concatenate(([1], self.gridtrack[:-1]))
@@ -1246,8 +1245,7 @@ class FirnDensityNoSpin:
                     print('warning:diffusion off, setting temp to Ts[iii]')
 
             elif ((self.MELT) and (
-                    np.all(
-                        self.LWC == 0.))):  # VV regular heat diffusion if no water in column (all refrozen or 0 water holding cap)
+            np.all(self.LWC == 0.))):  # VV regular heat diffusion if no water in column (all refrozen or 0 water holding cap)
                 self.Tz, self.T10m = heatDiff(self, iii)
                 dml_sum = 0
 
@@ -1358,7 +1356,7 @@ class FirnDensityNoSpin:
         try:
             if (self.c['FirnAir'] and self.cg['runtype'] == 'steady'):
                 bcoMartRho = 1 / (
-                        1 / (917.0) + self.cg['steady_T'] * 6.95E-7 - 4.3e-5)  # Martinerie density at close off
+                            1 / (917.0) + self.cg['steady_T'] * 6.95E-7 - 4.3e-5)  # Martinerie density at close off
             else:
                 bcoMartRho = 1 / (1 / (917.0) + self.T_mean[
                     iii] * 6.95E-7 - 4.3e-5)  # Martinerie density at close off; see Buizert thesis (2011), Blunier & Schwander (2000), Goujon (2003)
@@ -1404,7 +1402,7 @@ class FirnDensityNoSpin:
         phi[phi <= 0] = 1e-16
         phiC = 1 - bcoMartRho / RHO_I;  # porosity at close off
         phiClosed = 0.37 * phi * (
-                phi / phiC) ** -7.6  # Closed porosity, from Goujon. See Buizert thesis (eq. 2.3) as well
+                    phi / phiC) ** -7.6  # Closed porosity, from Goujon. See Buizert thesis (eq. 2.3) as well
         phiOpen = phi - phiClosed  # open porosity
 
         try:
@@ -1431,7 +1429,7 @@ class FirnDensityNoSpin:
         '''
 
         self.dH = (self.sdz_new - self.sdz_old) + self.dzNew - (
-                self.iceout * self.t[iii])  # iceout has units m ice/year, t is years per time step.
+                    self.iceout * self.t[iii])  # iceout has units m ice/year, t is years per time step.
         # self.dH2 = self.z[-1] - self.z_old[-1] #- (self.iceout*self.t) # alternative method. Should be the same?    
         self.dHAll.append(self.dH)
         self.dHtot = np.sum(self.dHAll)
@@ -1442,7 +1440,7 @@ class FirnDensityNoSpin:
 
         iceout_corr = self.iceout * RHO_I / self.rho[-1]
         self.dHcorr = (self.sdz_new - self.sdz_old) + self.dzNew - (
-                iceout_corr * self.t[iii])  # iceout has units m ice/year, t is years per time step.
+                    iceout_corr * self.t[iii])  # iceout has units m ice/year, t is years per time step.
 
         self.dHAllcorr.append(self.dHcorr)
         self.dHtotcorr = np.sum(self.dHAllcorr)
@@ -1451,3 +1449,4 @@ class FirnDensityNoSpin:
         return self.dH, self.dHtot, self.comp_firn, self.dHcorr, self.dHtotcorr
 
     ###########################
+
