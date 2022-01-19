@@ -24,6 +24,7 @@ CFM_main/example_results2
 
 *.pyc
 *.nc
+*.json
 code/gasmodel/Results/conc_out.csv
 
 code/gasmodel/Results/ESS524_fig1.eps
