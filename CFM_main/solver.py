@@ -41,7 +41,7 @@ def solver(a_U, a_D, a_P, b):
 
 ####!!!!
 
-def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, airdict=None, mode=None):
+def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, mode, airdict=None):
     """
     This is where d15N2 and d40Ar are calculated!!
 
@@ -216,9 +216,20 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         start = t.time_ns()
         phi_t = solver(a_U, a_D, a_P, b)
         end = t.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('all_times.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+        if mode == 'diffusion':
+            total_time_nanoseconds = end - start
+            all_times = open('times_diffusion.txt', 'a+')
+            all_times.write(str(total_time_nanoseconds) + '\n')
+        if mode == 'firn_air':
+            total_time_nanoseconds = end - start
+            all_times = open('times_firn_air.txt', 'a+')
+            all_times.write(str(total_time_nanoseconds) + '\n')
+        else:
+            total_time_nanoseconds = end - start
+            all_times = open('times_isotopeDiffusion.txt', 'a+')
+            all_times.write(str(total_time_nanoseconds) + '\n')
+
+
 
         a_P = a_U + a_D + a_P_0
 
