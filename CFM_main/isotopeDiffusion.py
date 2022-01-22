@@ -158,14 +158,14 @@ class isotopeDiffusion:
             D = m * pz * invtau * Da_18 * (1 / self.rho - 1 / RHO_I) / (R * self.Tz * alpha_18_z)
             D = D + 1.5e-15  # Emma added - not sure why? prevent negative?
             self.del_z = transient_solve_TR(z_edges_vec, z_P_vec, nt, self.dt, D, phi_0, nz_P, nz_fv, phi_s, self.rho,
-                                            c_vol)
+                                            c_vol, mode='isotopeDiffusion')
 
         elif ((self.isotope == 'D') or (self.isotope == 'dD')):
             Da_D = Da / 1.0251  # account for fractionation factor for D, fixed Johnsen typo
             D = m * pz * invtau * Da_D * (1 / self.rho - 1 / RHO_I) / (R * self.Tz * alpha_D_z)
             D[D <= 0.0] = 1.0e-20
             self.del_z = transient_solve_TR(z_edges_vec, z_P_vec, nt, self.dt, D, phi_0, nz_P, nz_fv, phi_s, self.rho,
-                                            c_vol)
+                                            c_vol, mode='isotopeDiffusion')
 
         elif ((self.isotope == 'NoDiffusion') or (self.isotope == 'ND')):
             D = np.zeros_like(self.z)

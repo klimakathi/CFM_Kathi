@@ -14,6 +14,7 @@ import json
 import scipy.interpolate as interpolate
 from constants import *
 import os
+import time as t
 
 
 class FirnAir:
@@ -306,7 +307,7 @@ class FirnAir:
 
         # TODO: here come delta gas values from!!
         self.Gz, w_p = transient_solve_TR(z_edges, z_P_vec, nt, self.dt, self.diffu, phi_0, nz_P, nz_fv, phi_s,
-                                          self.rho, c_vol, airdict)
+                                          self.rho, c_vol, airdict, mode='firn_air')
         self.Gz = np.concatenate(([self.Gs[iii]], self.Gz[:-1]))
 
 

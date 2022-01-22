@@ -41,7 +41,7 @@ def solver(a_U, a_D, a_P, b):
 
 ####!!!!
 
-def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, airdict=None):
+def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, airdict=None, mode=None):
     """
     This is where d15N2 and d40Ar are calculated!!
 
@@ -60,6 +60,8 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
     :param nz_P:
     :param nz_fv:
     :param phi_s:
+    :param mode: This is just for me to understand what time the solver needs for different modes ('firnair',
+                'isotopeDiffusion', and 'diffusion')
     :return phi_t:
     """
 
