@@ -4,13 +4,13 @@ Functions to solve the diffusion equation
 """
 
 import numpy as np
-# import cupy as cp  # this is to use GPUs on the datacruncher and speed up the runs :)) exciting...
 from scipy import interpolate
 import scipy.integrate
 from scipy.sparse import spdiags
 import scipy.sparse.linalg as splin
 from constants import *
 import sys
+from numba import jit
 import time as t
 
 def solver(a_U, a_D, a_P, b):
@@ -211,7 +211,13 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         a_U[-1] = 1
         b[-1] = deltaZ_u[-1] * bc_d[0]
 
+        start = t.time_ns()
         phi_t = solver(a_U, a_D, a_P, b)
+        end = t.time_ns()
+        total_time_nanoseconds = end - start
+        all_times = open('all_times.txt', 'a+')
+        all_times.write(str(total_time_nanoseconds) + '\n')
+
         a_P = a_U + a_D + a_P_0
 
     if airdict != None:
