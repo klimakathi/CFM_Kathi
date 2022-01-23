@@ -10,8 +10,9 @@ from scipy.sparse import spdiags
 import scipy.sparse.linalg as splin
 from constants import *
 import sys
-from numba import jit
+from numba import jit, njit
 import time as t
+
 
 def solver(a_U, a_D, a_P, b):
     """
@@ -40,7 +41,6 @@ def solver(a_U, a_D, a_P, b):
 
 
 ####!!!!
-
 def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s, tot_rho, c_vol, mode, airdict=None):
     """
     This is where d15N2 and d40Ar are calculated!!
@@ -124,8 +124,24 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             rho_edges = np.interp(z_edges, Z_P, airdict['rho'])
 
             # t_before = t.time_ns()
-            w_edges = w(airdict, z_edges, rho_edges, Z_P,
-                        dZ)  # advection term (upward relative motion due to porosity changing)
+
+            # --- rewrite everything in the airdict ----------------------------------------------
+            z_airdict = airdict['z']
+            Tz_airdict = airdict['Tz']
+            dt_airdict = airdict['dt']
+            por_op_airdict = airdict['por_op']
+            pressure_airdict = airdict['air_pressure']
+            advection_type_airdict = airdict['advection_type']
+            por_tot_airdict = airdict['por_op']
+            por_cl_airdict = airdict['por_cl']
+            w_firn_airdict = airdict['w_firn']
+            z_co_airdict = airdict['z_co']
+            dPdz = np.gradient(pressure_airdict, z_airdict)
+            por_cl_edges = np.interp(z_edges, Z_P, por_cl_airdict)
+            dscl = np.gradient(por_cl_edges, z_edges)
+
+            w_edges = w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
+                        por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl)  # advection term (upward relative motion due to porosity changing)
             # t_after = t.time_ns()
             # total_time_nanoseconds = t_after - t_before
             # all_times = open('all_times.txt', 'a+')
@@ -218,15 +234,15 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         end = t.time_ns()
         if mode == 'diffusion':
             total_time_nanoseconds = end - start
-            all_times = open('times_diffusion.txt', 'a+')
+            all_times = open('times_diffusion_njit.txt', 'a+')
             all_times.write(str(total_time_nanoseconds) + '\n')
         if mode == 'firn_air':
             total_time_nanoseconds = end - start
-            all_times = open('times_firn_air.txt', 'a+')
+            all_times = open('times_firn_air_njit.txt', 'a+')
             all_times.write(str(total_time_nanoseconds) + '\n')
         else:
             total_time_nanoseconds = end - start
-            all_times = open('times_isotopeDiffusion.txt', 'a+')
+            all_times = open('times_isotopeDiffusion_njit.txt', 'a+')
             all_times.write(str(total_time_nanoseconds) + '\n')
 
 
@@ -411,18 +427,17 @@ def transient_solve_EN(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 Functions below are for firn air
 Works, but consider to be in beta
 '''
-
-
-def w(airdict, z_edges, rho_edges, Z_P, dZ):
+#@njit
+def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
+                        por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl):
     """
     Function for downward advection of air and also calculates total air content.
     """
-    if airdict['advection_type'] == 'Darcy':
-        por_op_edges = np.interp(z_edges, airdict['z'], airdict['por_op'])
-        T_edges = np.interp(z_edges, airdict['z'], airdict['Tz'])
+    if advection_type_airdict == 'Darcy':
+        por_op_edges = np.interp(z_edges, z_airdict, por_op_airdict)
+        T_edges = np.interp(z_edges, z_airdict, Tz_airdict)
         p_star = por_op_edges * np.exp(M_AIR * GRAVITY * z_edges / (R * T_edges))
-        dPdz = np.gradient(airdict['air_pressure'], airdict['z'])
-        dPdz_edges = np.interp(z_edges, airdict['z'], dPdz)
+        dPdz_edges = np.interp(z_edges, z_airdict, dPdz)
 
         # perm = 10.0**(-7.29) * por_op_edges**3.71 # Adolph and Albert, 2014, eq. 5, units m^2
         # perm = 10.0**(-7.7) * por_op_edges**3.4 #Freitag, 2002
@@ -430,23 +445,22 @@ def w(airdict, z_edges, rho_edges, Z_P, dZ):
         visc = 1.5e-5  # kg m^-1 s^-1, dynamic viscosity, source?
         flux = -1.0 * perm / visc * dPdz_edges  # units m/s
         # w_ad = flux / airdict['dt']  / por_op_edges # where did I get this?
-        w_ad = flux / p_star / airdict['dt']
+        w_ad = flux / p_star / dt_airdict
         # w_ad = flux / por_op_edges / airdict['dt']
 
-    elif airdict['advection_type'] == 'Christo':
-        por_tot_edges = np.interp(z_edges, Z_P, airdict['por_tot'])
-        por_cl_edges = np.interp(z_edges, Z_P, airdict['por_cl'])
-        por_op_edges = np.interp(z_edges, Z_P, airdict['por_op'])
-        w_firn_edges = np.interp(z_edges, Z_P, airdict['w_firn'])  # units m/s
-        T_edges = np.interp(z_edges, Z_P, airdict['Tz'])
+    elif advection_type_airdict == 'Christo':
+        por_tot_edges = np.interp(z_edges, Z_P, por_tot_airdict)
+
+        por_op_edges = np.interp(z_edges, Z_P, por_op_airdict)
+        w_firn_edges = np.interp(z_edges, Z_P, w_firn_airdict)  # units m/s
+        T_edges = np.interp(z_edges, Z_P, Tz_airdict)
         p_star = por_op_edges * np.exp(M_AIR * GRAVITY * z_edges / (R * T_edges))
-        dscl = np.gradient(por_cl_edges, z_edges)
         C = np.exp(M_AIR * GRAVITY * z_edges / (R * T_edges))
 
-        op_ind = np.where(z_edges <= airdict['z_co'])[0]  # indices of all nodes wiht open porosity (shallower than CO)
-        op_ind2 = np.where(z_edges <= airdict['z_co'] + 20)[0]  # a bit deeper
+        op_ind = np.where(z_edges <= z_co_airdict)[0]  # indices of all nodes wiht open porosity (shallower than CO)
+        op_ind2 = np.where(z_edges <= z_co_airdict + 20)[0]  # a bit deeper
         co_ind = op_ind[-1]
-        cl_ind1 = np.where(z_edges > airdict['z_co'])[0]  # closed indices
+        cl_ind1 = np.where(z_edges > z_co_airdict)[0]  # closed indices
         cl_ind = np.intersect1d(cl_ind1, op_ind2)
 
         # print('depth co_ind',z_edges[co_ind])
@@ -482,18 +496,18 @@ def w(airdict, z_edges, rho_edges, Z_P, dZ):
 
         # veldiff = velocity
 
-    elif airdict['advection_type'] == 'zero':
+    elif advection_type_airdict == 'zero':
         w_ad = np.zeros_like(rho_edges)
 
     return w_ad
 
-
+#@njit
 def A(P):
     """Power-law scheme, Patankar eq. 5.34"""
-    A = np.maximum((1 - 0.1 * np.abs(P)) ** 5, np.zeros(np.size(P)))
+    A = np.maximum((1 - 0.1 * np.abs(P)) ** 5, np.zeros(P.size))
     return A
 
-
+#@njit
 def F_upwind(F):
     """ Upwinding scheme """
     F_upwind = np.maximum(F, 0)
