@@ -140,8 +140,23 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             por_cl_edges = np.interp(z_edges, Z_P, por_cl_airdict)
             dscl = np.gradient(por_cl_edges, z_edges)
 
+            start = t.time_ns()
             w_edges = w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
                         por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl)  # advection term (upward relative motion due to porosity changing)
+            end = t.time_ns()
+
+            if mode == 'diffusion':
+                total_time_nanoseconds = end - start
+                all_times = open('times_diffusion_njit.txt', 'a+')
+                all_times.write(str(total_time_nanoseconds) + '\n')
+            if mode == 'firn_air':
+                total_time_nanoseconds = end - start
+                all_times = open('times_firn_air_njit.txt', 'a+')
+                all_times.write(str(total_time_nanoseconds) + '\n')
+            else:
+                total_time_nanoseconds = end - start
+                all_times = open('times_isotopeDiffusion_njit.txt', 'a+')
+                all_times.write(str(total_time_nanoseconds) + '\n')
             # t_after = t.time_ns()
             # total_time_nanoseconds = t_after - t_before
             # all_times = open('all_times.txt', 'a+')
@@ -229,9 +244,10 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         a_U[-1] = 1
         b[-1] = deltaZ_u[-1] * bc_d[0]
 
-        start = t.time_ns()
+        #start = t.time_ns()
         phi_t = solver(a_U, a_D, a_P, b)
-        end = t.time_ns()
+        #end = t.time_ns()
+        """
         if mode == 'diffusion':
             total_time_nanoseconds = end - start
             all_times = open('times_diffusion_njit.txt', 'a+')
@@ -244,6 +260,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             total_time_nanoseconds = end - start
             all_times = open('times_isotopeDiffusion_njit.txt', 'a+')
             all_times.write(str(total_time_nanoseconds) + '\n')
+        """
 
 
 
@@ -433,6 +450,21 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
     """
     Function for downward advection of air and also calculates total air content.
     """
+    np.save('z_airdict', z_airdict)
+    np.save('Tz_airdict', Tz_airdict)
+    np.save('dt_airdict', dt_airdict)
+    np.save('por_op_airdict', por_op_airdict)
+    np.save('por_tot_airdict', por_tot_airdict)
+    np.save('w_firn_airdict', w_firn_airdict)
+    np.save('z_co_airdict', z_co_airdict)
+    np.save('z_edges', z_edges)
+    np.save('rho_edges', rho_edges)
+    np.save('Z_P', Z_P)
+    np.save('dPdz', dPdz)
+    np.save('por_cl_edges', por_cl_edges)
+    np.save('dscl', dscl)
+
+    print('saved!')
     if advection_type_airdict == 'Darcy':
         por_op_edges = np.interp(z_edges, z_airdict, por_op_airdict)
         T_edges = np.interp(z_edges, z_airdict, Tz_airdict)
