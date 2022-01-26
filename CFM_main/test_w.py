@@ -60,32 +60,6 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, advection_type_airdict,
 
     return w_ad
 
-def op_index(z_edges, z_co_airdict):
-    op_ind = np.where(z_edges <= z_co_airdict)[0]  # indices of all nodes with open porosity (shallower than CO)
-    return op_ind
-
-def op_index2(z_edges, z_co_airdict):
-    op_ind2 = np.where(z_edges <= z_co_airdict + 20)[0]  # a bit deeper
-    return op_ind2
-
-def co_index(op_ind):
-    co_ind = op_ind[-1]
-    return co_ind
-
-def cl_index1(z_edges, z_co_airdict):
-    cl_ind1 = np.where(z_edges > z_co_airdict)[0]  # closed indices
-    return cl_ind1
-
-def cl_index(cl_ind1, op_ind2):
-    cl_ind = np.intersect1d(cl_ind1, op_ind2)
-    return cl_ind
-
-
-
-
-
-
-
 @njit
 def A(P):
     """Power-law scheme, Patankar eq. 5.34"""
