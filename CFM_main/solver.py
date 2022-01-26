@@ -463,6 +463,9 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
     np.save('dPdz', dPdz)
     np.save('por_cl_edges', por_cl_edges)
     np.save('dscl', dscl)
+    np.save('pressure_airdict', pressure_airdict)
+    np.save('por_cl_airdict', por_cl_airdict)
+    np.save('dZ', dZ)
 
     print('saved!')
     if advection_type_airdict == 'Darcy':
