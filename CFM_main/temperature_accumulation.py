@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-stps = 10000
-t = np.arange(-stps, 0, 1)
+stps = 1000
+t = np.arange(-stps, 1, 1)
 base = 240
 f1 = 1./20000
 f2 = 1./5000
@@ -20,6 +20,7 @@ input_acc = np.array([t, acc])
 
 np.savetxt('CFMinput/solver_test_T.csv', input_temps, delimiter=",")
 np.savetxt('CFMinput/solver_test_Acc.csv', input_acc, delimiter=",")
+
 
 plot = True
 if plot:
