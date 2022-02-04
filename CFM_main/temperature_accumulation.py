@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+plt.rc('text', usetex=True)
+plt.rc('font', family='serif')
+
 stps = 1000
 t = np.arange(-stps, 1, 1)
 base = 240

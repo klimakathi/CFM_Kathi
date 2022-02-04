@@ -51,7 +51,7 @@ from sublim import sublim  # VV
 from ModelOutputs import ModelOutputs
 
 
-all_times = open('all_times.txt', 'w')
+#all_times = open('all_times.txt', 'w')
 
 class FirnDensityNoSpin:
     """

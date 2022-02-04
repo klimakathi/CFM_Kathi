@@ -197,16 +197,6 @@ class FirnAir:
         ct_i = np.where(self.por_cl >= self.por_tot)[0][0]
         li_i = np.where(self.rho >= self.LIDRho)[0][0]
 
-        # print('first full close', self.z[ct_i])
-        # print('open',self.z[op_i])
-        # print('open',self.rho[op_i])
-        # print('bco',self.z[co_i])
-        # print('bco',self.rho[co_i])
-        # print('porosity',self.por_tot[co_i])
-        # print('LID z',self.z[li_i])
-        # print('LID rho',self.rho[li_i])
-        # print('liz width',self.z[co_i]-self.z[li_i])
-
         self.por_op[self.por_op <= 0] = 1.0e-25
 
         return self.rho_co, self.por_co, self.por_tot, self.por_cl, self.por_op, self.bcoRho, self.LIDRho

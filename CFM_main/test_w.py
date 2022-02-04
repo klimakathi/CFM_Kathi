@@ -111,3 +111,4 @@ print('mean: ', np.mean(time__))
 print('mean [1:]: ', np.mean(time__[1:]))
 
 # w.inspect_types()
+print(z_edges)

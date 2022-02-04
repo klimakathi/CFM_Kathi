@@ -144,7 +144,11 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             w_edges = w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
                         por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl)  # advection term (upward relative motion due to porosity changing)
             end = t.time_ns()
+            total_time_nanoseconds = end - start
+            all_times = open('w_1000yr_njit.txt', 'a+')
+            all_times.write(str(total_time_nanoseconds) + '\n')
 
+            """
             if mode == 'diffusion':
                 total_time_nanoseconds = end - start
                 all_times = open('times_diffusion_njit.txt', 'a+')
@@ -157,10 +161,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
                 total_time_nanoseconds = end - start
                 all_times = open('times_isotopeDiffusion_njit.txt', 'a+')
                 all_times.write(str(total_time_nanoseconds) + '\n')
-            # t_after = t.time_ns()
-            # total_time_nanoseconds = t_after - t_before
-            # all_times = open('all_times.txt', 'a+')
-            # all_times.write(str(total_time_nanoseconds) + '\n')
+            """
 
             w_p = np.interp(Z_P, z_edges, w_edges)  # Units m/s
             w_edges[z_edges > airdict['z_co']] = 0.0
@@ -444,11 +445,12 @@ def transient_solve_EN(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 Functions below are for firn air
 Works, but consider to be in beta
 '''
-#@njit
+@njit
 def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
                         por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl):
     """
     Function for downward advection of air and also calculates total air content.
+    """
     """
     np.save('z_airdict', z_airdict)
     np.save('Tz_airdict', Tz_airdict)
@@ -467,7 +469,11 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
     np.save('por_cl_airdict', por_cl_airdict)
     np.save('dZ', dZ)
 
-    print('saved!')
+    #print('saved!')
+    """
+    print(z_edges)
+    print(z_edges.shape)
+    print(Z_P)
     if advection_type_airdict == 'Darcy':
         por_op_edges = np.interp(z_edges, z_airdict, por_op_airdict)
         T_edges = np.interp(z_edges, z_airdict, Tz_airdict)
@@ -536,13 +542,13 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
 
     return w_ad
 
-#@njit
+@njit
 def A(P):
     """Power-law scheme, Patankar eq. 5.34"""
     A = np.maximum((1 - 0.1 * np.abs(P)) ** 5, np.zeros(P.size))
     return A
 
-#@njit
+@njit
 def F_upwind(F):
     """ Upwinding scheme """
     F_upwind = np.maximum(F, 0)
