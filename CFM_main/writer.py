@@ -45,7 +45,6 @@ def write_nospin_hdf5(self, Mout_dict, forcing_dict=None):
         f4.create_dataset(wn, data=Mout_dict[VW])
 
     if forcing_dict:
-        print(forcing_dict)
         ks = list(forcing_dict)
         ll = len(forcing_dict[ks[0]]) - 1
         lm = np.shape(self.modeltime)[0]
