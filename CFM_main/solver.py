@@ -445,7 +445,7 @@ def transient_solve_EN(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
 Functions below are for firn air
 Works, but consider to be in beta
 '''
-@njit
+#@njit
 def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
                         por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl):
     """
@@ -471,9 +471,7 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
 
     #print('saved!')
     """
-    print(z_edges)
-    print(z_edges.shape)
-    print(Z_P)
+
     if advection_type_airdict == 'Darcy':
         por_op_edges = np.interp(z_edges, z_airdict, por_op_airdict)
         T_edges = np.interp(z_edges, z_airdict, Tz_airdict)
@@ -542,13 +540,13 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
 
     return w_ad
 
-@njit
+#@njit
 def A(P):
     """Power-law scheme, Patankar eq. 5.34"""
     A = np.maximum((1 - 0.1 * np.abs(P)) ** 5, np.zeros(P.size))
     return A
 
-@njit
+#@njit
 def F_upwind(F):
     """ Upwinding scheme """
     F_upwind = np.maximum(F, 0)
