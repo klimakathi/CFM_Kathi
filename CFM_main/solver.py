@@ -32,28 +32,28 @@ def solver(a_U, a_D, a_P, b):
     diags = (np.append([a_U, -a_P], [a_D], axis=0))
     cols = np.array([1, 0, -1])
 
-    start = time.time_ns()
+   # start = time.time_ns()
     big_A = spdiags(diags, cols, nz, nz, format='csc')
-    end = time.time_ns()
-    total_time_nanoseconds = end - start
-    all_times = open('time/time_spdiags.txt', 'a+')
-    all_times.write(str(total_time_nanoseconds) + '\n')
+   # end = time.time_ns()
+   # total_time_nanoseconds = end - start
+   # all_times = open('time/time_spdiags.txt', 'a+')
+   # all_times.write(str(total_time_nanoseconds) + '\n')
 
-    start = time.time_ns()
+  #  start = time.time_ns()
     big_A = big_A.T
-    end = time.time_ns()
-    total_time_nanoseconds = end - start
-    all_times = open('time/time_T2.txt', 'a+')
-    all_times.write(str(total_time_nanoseconds) + '\n')
+  #  end = time.time_ns()
+   # total_time_nanoseconds = end - start
+   # all_times = open('time/time_T2.txt', 'a+')
+    #all_times.write(str(total_time_nanoseconds) + '\n')
 
     rhs = -b
 
-    start = time.time_ns()
+   # start = time.time_ns()
     phi_t = splin.spsolve(big_A, rhs)
-    end = time.time_ns()
-    total_time_nanoseconds = end - start
-    all_times = open('time/time_spsolve.txt', 'a+')
-    all_times.write(str(total_time_nanoseconds) + '\n')
+   # end = time.time_ns()
+   # total_time_nanoseconds = end - start
+    #all_times = open('time/time_spsolve.txt', 'a+')
+   # all_times.write(str(total_time_nanoseconds) + '\n')
 
     return phi_t
 
@@ -507,100 +507,101 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
 
     elif advection_type_airdict == 'Christo':
 
-        start = time.time_ns()
+        #start = time.time_ns()
         por_op_edges = np.interp(z_edges, Z_P, por_op_airdict)
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_interp1.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+        #end = time.time_ns()
+        #total_time_nanoseconds = end - start
+        #all_times = open('time/time_interp1.txt', 'a+')
+        #all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+        #start = time.time_ns()
         w_firn_edges = np.interp(z_edges, Z_P, w_firn_airdict)  # units m/s
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_interp2.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_interp2.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+       # start = time.time_ns()
         T_edges = np.interp(z_edges, Z_P, Tz_airdict)
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_interp3.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_interp3.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+       # start = time.time_ns()
         C = np.exp(M_AIR * GRAVITY * z_edges / (R * T_edges))
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_exp1.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_exp1.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+        #start = time.time_ns()
         op_ind = np.where(z_edges <= z_co_airdict)[0]  # indices of all nodes wiht open porosity (shallower than CO)
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_where1.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+        #end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_where1.txt', 'a+')
+        #all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+       # start = time.time_ns()
         op_ind2 = np.where(z_edges <= z_co_airdict + 20)[0]  # a bit deeper
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_where2.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+        #all_times = open('time/time_where2.txt', 'a+')
+        #all_times.write(str(total_time_nanoseconds) + '\n')
 
         co_ind = op_ind[-1]
 
-        start = time.time_ns()
+      #  start = time.time_ns()
         cl_ind1 = np.where(z_edges > z_co_airdict)[0]  # closed indices
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_where3.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+        #total_time_nanoseconds = end - start
+       # all_times = open('time/time_where3.txt', 'a+')
+        #all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
-        cl_ind = np.intersect1d(cl_ind1, op_ind2)
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_intersect1.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+        #start = time.time_ns()
+       # cl_ind = np.intersect1d(cl_ind1, op_ind2)
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_intersect1.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+        #start = time.time_ns()
         Xi_up = por_op_edges[op_ind2] / np.reshape(por_op_edges[op_ind2], (-1, 1))
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_reshape1.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_reshape1.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+       # start = time.time_ns()
         Xi_down = (1 + np.log(np.reshape(w_firn_edges[op_ind2], (-1, 1)) / w_firn_edges[op_ind2]))
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_reshape2_log.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_reshape2_log.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
         Xi = Xi_up / Xi_down  # Equation 5.10 in Christo's thesis; Xi[i,j] is the pressure increase (ratio) for bubbles at depth[i] that were trapped at depth[j]
 
-        start = time.time_ns()
+       # start = time.time_ns()
         integral_matrix = (Xi.T * dscl[op_ind2] * C[op_ind2]).T
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_T.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+        #total_time_nanoseconds = end - start
+       # all_times = open('time/time_T.txt', 'a+')
+        #all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
-        integral_matrix_sum = integral_matrix.sum(axis=1)
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_sum.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # start = time.time_ns()
+        #integral_matrix_sum = integral_matrix.sum(axis=1)
+        integral_matrix_sum = np.sum(integral_matrix, axis=1)
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_sum.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
-        start = time.time_ns()
+       # start = time.time_ns()
         p_ratio = np.zeros_like(z_edges)
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_zeros_like.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_zeros_like.txt', 'a+')
+        #all_times.write(str(total_time_nanoseconds) + '\n')
 
         p_ratio[op_ind] = integral_matrix_sum[op_ind]  # 5.11
         p_ratio[cl_ind] = p_ratio[co_ind] * Xi[cl_ind, co_ind]  # 5.12
@@ -608,13 +609,13 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
 
         flux = w_firn_edges[co_ind - 1] * p_ratio[co_ind - 1] * por_cl_edges[co_ind - 1]
 
-        start = time.time_ns()
+      #  start = time.time_ns()
         velocity = np.minimum(w_firn_edges,
                               ((flux + 1e-10 - w_firn_edges * p_ratio * por_cl_edges) / ((por_op_edges + 1e-10 * C))))
-        end = time.time_ns()
-        total_time_nanoseconds = end - start
-        all_times = open('time/time_minimum.txt', 'a+')
-        all_times.write(str(total_time_nanoseconds) + '\n')
+       # end = time.time_ns()
+       # total_time_nanoseconds = end - start
+       # all_times = open('time/time_minimum.txt', 'a+')
+       # all_times.write(str(total_time_nanoseconds) + '\n')
 
         w_ad = (velocity - w_firn_edges)
 
