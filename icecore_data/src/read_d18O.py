@@ -3,10 +3,10 @@ from smoothing_splines import *
 
 
 def read_data_d18O(path_data):
-    df = pd.read_excel(path_data, sheet_name='Sheet7')
-    depth_data = np.flipud(np.array(df[df.columns[1]])[:])
-    d18O_data = np.flipud(np.array(df[df.columns[2]])[:]) / 1000.
-    ice_age_data = np.flipud(np.array(df[df.columns[0]])[:]) * (-1)
+    df = pd.read_excel(path_data)
+    depth_data = np.flipud(np.array(df[df.columns[0]]))
+    d18O_data = np.flipud(np.array(df[df.columns[6]])) / 1000.
+    ice_age_data = np.flipud(np.array(df[df.columns[7]])) * (-1)
     return depth_data, d18O_data, ice_age_data
 
 

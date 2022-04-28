@@ -103,11 +103,11 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
         # TODO: FINALLY!!!!! the gas diffusion!!!
         # this part is for gas diffusion, which takes a bit more physics
         if airdict != None:
-            Gamma_Po = Gamma_P * airdict['por_op']  # This is the firn conductivity K_firn times the open porosity.
+            Gamma_Po = Gamma_P * airdict['por_op']
             # this has to do sth with interface conductivity (Patankar 1980)
             Gamma_U = np.append(Gamma_Po[0], Gamma_Po[0: -1])
             Gamma_D = np.append(Gamma_Po[1:], Gamma_Po[-1])
-            # gives firn conductivity at interfaces u and d
+
             Gamma_u = 1 / ((1 - f_u) / Gamma_Po + f_u / Gamma_U)  # Patankar Eq. 4.11 --> actually 4.9?
             Gamma_d = 1 / ((1 - f_d) / Gamma_Po + f_d / Gamma_D)
 
@@ -559,7 +559,7 @@ def w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advec
         #all_times.write(str(total_time_nanoseconds) + '\n')
 
         #start = time.time_ns()
-       # cl_ind = np.intersect1d(cl_ind1, op_ind2)
+        cl_ind = np.intersect1d(cl_ind1, op_ind2)
        # end = time.time_ns()
        # total_time_nanoseconds = end - start
        # all_times = open('time/time_intersect1.txt', 'a+')

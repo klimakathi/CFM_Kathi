@@ -39,9 +39,8 @@ d15n_data_up = d15n_data + d15n_data_err
 d15n_data_lo = d15n_data - d15n_data_err
 
 df2 = pd.read_excel(file_location, sheet_name='Sheet5')
-gas_age = np.array(df2[df2.columns[2]])
+gas_age = np.array(df2[df2.columns[3]])
 depth = np.array(df2[df2.columns[0]])
-
 
 # get depth from data corresponding to the modelled gas_age --> depth_regrid
 MD = interpolate.interp1d(gas_age, depth, 'linear', fill_value='extrapolate')

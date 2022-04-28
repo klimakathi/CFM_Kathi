@@ -5,13 +5,6 @@ import matplotlib.pyplot as plt
 import scipy.interpolate as interpolate
 import csaps
 
-plt.rc('text', usetex=True)
-plt.rc('font', family='serif')
-
-data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
-model_path = 'resultsFolder/CFMresults_NGRIP_HLdynamic_65_30kyr.hdf5'
-cop1 = 1 / 200.  # cut-off period for d15N
-
 
 def smooth_parameter(cop, age_):
     dx = np.mean(np.diff(age_))  # mean distance between two points
@@ -36,7 +29,9 @@ def get_model_data_d15N(path_model, cod):
         gas_age_cod = np.ones_like(close_off_depth)
         ice_age_cod = np.ones_like(close_off_depth)
 
+
     else:
+        # Get data at LID
         close_off_depth = file["BCO"][:, 6]
         depth_model = file['depth']
         d15n = file["d15N2"][:] - 1.
@@ -45,7 +40,6 @@ def get_model_data_d15N(path_model, cod):
         ice_age_model = file["age"][:]
         gas_age_cod = np.ones_like(close_off_depth)
         ice_age_cod = np.ones_like(close_off_depth)
-
 
     for i in range(depth_model.shape[0]):
         index = int(np.where(depth_model[i, 1:] == close_off_depth[i])[0])
@@ -86,10 +80,16 @@ def get_icecore_d15N_data(path_data, cop, gas_age, delta_age, ice_age):
     ice_age_data = np.flipud(np.array(df2[df2.columns[3]])) * (-1)
     depth = np.flipud(np.array(df2[df2.columns[0]]))
 
-    # get depth from data corresponding to the modelled gas_age --> depth_regrid
+    # make a new ice age grid with mean distance 10 yr
+    mean_distance = 10
+    min_ice_age = np.min(ice_age)
+    max_ice_age = np.max(ice_age)
+    ice_age_grid = np.arange(min_ice_age, max_ice_age, mean_distance)
+
+    # get depth from data corresponding to the modelled ice_age --> depth_regrid
     # ---------------------------------------------------------------------------------------------------
     MD = interpolate.interp1d(ice_age_data, depth, 'linear', fill_value='extrapolate')
-    depth_regrid = MD(ice_age)
+    depth_regrid = MD(ice_age_grid)
 
     # get corresponding d15N values
     # ---------------------------------------------------------------------------------------------------
@@ -98,23 +98,116 @@ def get_icecore_d15N_data(path_data, cop, gas_age, delta_age, ice_age):
 
     # Apply cubic smoothing spline to d15N data
     # ---------------------------------------------------------------------------------------------------
-    p = smooth_parameter(cop, ice_age)
-    sp = csaps.CubicSmoothingSpline(ice_age, d15n_data_regrid, smooth=p)
+    p = smooth_parameter(cop, ice_age_data)
+    sp = csaps.CubicSmoothingSpline(ice_age_grid, d15n_data_regrid, smooth=p)
     d15n_smooth = sp(ice_age)
-    # plt.plot(gas_age, d15n_data_regrid)
-    # plt.plot(gas_age, d15n_smooth)
-    # plt.show()
 
     return d15n_smooth
 
 
-   # return 0
+def get_cod(path_model, cod):
+    file = h5py.File(path_model, 'r')
+    if cod:
+        close_off_depth = file["BCO"][:, 2]
+    else:
+        close_off_depth = file['BCO'][:, 6]
+    depth_model = file['depth']
+    ice_age_model = file["age"][:]
+    ice_age_cod = np.ones_like(close_off_depth)
+
+    for i in range(depth_model.shape[0]):
+        index = int(np.where(depth_model[i, 1:] == close_off_depth[i])[0])
+        ice_age_cod[i] = ice_age_model[i, index]
+
+    ice_age_cod = ice_age_cod[1:]
+    modeltime = depth_model[1:, 0]
+
+    cop1 = 1. / 200
+    p = smooth_parameter(cop1, modeltime)
+    sp2 = csaps.CubicSmoothingSpline(modeltime, ice_age_cod, smooth=p)
+    ice_age_cod_smooth = sp2(modeltime)
+    ice_age = modeltime - ice_age_cod_smooth
+    close_off_depth = close_off_depth[1:]
+
+    return close_off_depth, ice_age
 
 
-a = get_model_data_d15N(model_path, cod=False)
-a2 = get_model_data_d15N(model_path, cod=True)
-b = get_icecore_d15N_data(data_path, cop1, a[0], a[2], a[3])
-f = h5py.File(model_path, 'r')
+def get_diff(path_model):
+    file = h5py.File(path_model, 'r')
+    diffusivity = file['diffusivity'][:]
+    depth_model = file['depth']
+    modeltime = depth_model[1:, 0]
+    ice_age_model = file["age"][:]
+    d15n = file['d15N2'][:] - 1.
+    index = np.zeros(np.shape(diffusivity)[0])
+    ice_age_cod = np.zeros(np.shape(diffusivity)[0])
+    d15n_cod = np.zeros(np.shape(diffusivity)[0])
+    cod = np.zeros(np.shape(diffusivity)[0])
+    for i in range(np.shape(diffusivity)[0]):
+        index[i] = np.max(np.where(diffusivity[i, 1:] > 10 ** (-20))) + 1
+        ice_age_cod[i] = ice_age_model[i, int(index[i])]
+        d15n_cod[i] = d15n[i, int(index[i])]
+        cod[i] = depth_model[i, int(index[i])]
+    d15n_cod = d15n_cod[1:]
+
+    cop1 = 1. / 200
+
+    '''
+    p = smooth_parameter(cop1, modeltime)
+    sp2 = csaps.CubicSmoothingSpline(modeltime, ice_age_cod[1:], smooth=p)
+    ice_age_cod_smooth = sp2(modeltime)
+    ice_age = modeltime - ice_age_cod_smooth
+    '''
+    ice_age = modeltime - ice_age_cod[1:]
+    cod = cod[1:]
+    return ice_age, d15n_cod, cod
+
+
+def get_model_data_d15N_from_diff(path_model, cod):
+    # Data from model
+    # ------------------------------------------------------------------------------------------------------
+    file = h5py.File(path_model, 'r')
+    diffusivity = file['diffusivity'][:]
+    depth_model = file['depth']
+    ice_age_model = file["age"][:]
+    gas_age_model = file['gas_age'][:]
+    d15n = file['d15N2'][:] - 1.
+    index = np.zeros(np.shape(diffusivity)[0])
+    ice_age_cod = np.zeros(np.shape(diffusivity)[0])
+    gas_age_cod = np.zeros(np.shape(diffusivity)[0])
+    d15n_cod = np.zeros(np.shape(diffusivity)[0])
+    cod = np.zeros(np.shape(diffusivity)[0])
+    for i in range(np.shape(diffusivity)[0]):
+        index[i] = np.max(np.where(diffusivity[i, 1:] > 10 ** (-20))) + 1
+        ice_age_cod[i] = ice_age_model[i, int(index[i])]
+        gas_age_cod[i] = gas_age_model[i, int(index[i])]
+        d15n_cod[i] = d15n[i, int(index[i])]
+        cod[i] = depth_model[i, int(index[i])]
+    d15n_cod = d15n_cod[1:]
+
+    gas_age_cod = gas_age_cod[1:]
+    ice_age_cod = ice_age_cod[1:]
+    plt.plot(ice_age_cod[1:])
+    plt.show()
+    modeltime = depth_model[1:, 0]
+
+    cop1 = 1. / 200
+    p = smooth_parameter(cop1, modeltime)
+    sp = csaps.CubicSmoothingSpline(modeltime, gas_age_cod, smooth=p)
+    gas_age_cod_smooth = sp(modeltime)
+
+    sp2 = csaps.CubicSmoothingSpline(modeltime, ice_age_cod, smooth=p)
+    ice_age_cod_smooth = sp2(modeltime)
+
+    ice_age = modeltime - ice_age_cod_smooth  # signs seem to be wrong way round because of negative modeltime
+    delta_age = ice_age_cod_smooth - gas_age_cod_smooth
+    gas_age = ice_age + delta_age
+
+    return gas_age, d15n_cod, delta_age, ice_age
+
+
+
+
 
 
 '''
@@ -130,15 +223,6 @@ ax2.set_ylabel("Accumulation ice equivalent [m/yr]", color="orange")
 plt.show()
 '''
 
-plt.plot(a[3], a[1] * 1000, label='model LID')
-plt.plot(a2[3], a2[1] * 1000, label='model COD')
-plt.plot(a[3], b, label='data')
-plt.xlabel('GICC05modelext ice age [yr]')
-plt.ylabel('$\delta^{15}$N [‰]')
-
-#plt.plot(T[:, 0], (T[:, 2] - np.mean(T[:, 2]))/np.std(T[:, 2]), label='T')
-plt.legend()
-plt.show()
 
 
 

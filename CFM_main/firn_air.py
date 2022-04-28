@@ -308,7 +308,6 @@ class FirnAir:
         self.gas_age[ind_LID[0]] = 15.0
         ii2 = np.where((self.z > self.LID) & (self.gas_age == 0))[0]
         self.gas_age[ii2] = 15
-
         # print('diffu',self.diffu[0:10])
         return self.Gz, self.diffu, w_p, self.gas_age
 

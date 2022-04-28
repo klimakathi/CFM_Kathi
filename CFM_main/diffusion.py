@@ -8,8 +8,6 @@ Isotope diffusion now has its own class.
 """
 
 from solver import transient_solve_TR
-# from solver import transient_solve_EN_old
-# from solver import transient_solve_EN_new
 from solver import transient_solve_EN
 from constants import *
 import numpy as np

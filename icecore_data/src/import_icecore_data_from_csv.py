@@ -33,7 +33,7 @@ temps_up = temps + temps_err
 # ----------------------------------------------------------------------------------------------------------------------
 # Make cubic smoothing spline
 
-cop1 = 1/200.  # cut-off period
+cop1 = 1/300.  # cut-off period
 
 
 def smooth_parameter(cop, age_):
@@ -52,10 +52,12 @@ t_grid = np.arange(-start_year, -end_year + 20, 20)
 temp_smooth = sp1(t_grid)
 accs_smooth = sp2(t_grid)
 
+temp_smooth_lo = temp_smooth - 3.  # -3K
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Save in CFM format
-input_temps = np.array([t_grid, temp_smooth])
+input_temps = np.array([t_grid, temp_smooth_lo])
 # input_temps_lo = np.array([t, temps_lo])
 # input_temps_up = np.array([t, temps_up])
 input_acc = np.array([t_grid, accs_smooth])
@@ -68,7 +70,7 @@ np.savetxt('../../CFM_main/CFMinput/NGRIP_Acc_65_30kyr.csv', input_acc, delimite
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Plot temperature and accumulation
-plot = False
+plot = True
 if plot:
     fig, ax = plt.subplots()
     ax.plot(t / 1000, temps, 'o', markersize=1, color='blue')
