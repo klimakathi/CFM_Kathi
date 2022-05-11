@@ -36,6 +36,36 @@ def get_d15N_data(path_data, ice_age_d15N_model, cop):
     return d15n_data_regrid, d15n_err_regrid
 
 
+def get_d15N_data_gasage(path_data, gas_age_d15N_model, cop):
+    # Data from ice core
+    # ---------------------------------------------------------------------------------------------------
+    df = pd.read_excel(path_data)
+    depth_data = np.flipud(np.array(df[df.columns[0]]))
+    d15n_data = np.flipud(np.array(df[df.columns[9]]))
+    d15n_err = np.flipud(np.array(df[df.columns[10]]))
+    gas_age_data = np.flipud(np.array(df[df.columns[2]])) * (-1)
+
+    # Interpolate ice_age from d15N2 data to the gas_age from d15N_model
+    # ---------------------------------------------------------------------------------------------------
+    Data2Model = interpolate.interp1d(gas_age_data, depth_data, 'linear', fill_value='extrapolate')
+    depth_regrid = Data2Model(gas_age_d15N_model)
+
+    # get corresponding d15N values
+    # ---------------------------------------------------------------------------------------------------
+    ND = interpolate.interp1d(depth_data, d15n_data, 'linear', fill_value='extrapolate')
+    d15n_data_regrid = ND(depth_regrid)
+    ND_err = interpolate.interp1d(depth_data, d15n_err, 'linear', fill_value='extrapolate')
+    d15n_err_regrid = ND_err(depth_regrid)
+
+    # Apply cubic smoothing spline to d15N data
+    # ---------------------------------------------------------------------------------------------------
+    # ice_age_d15N_model = remove_negative_values(gas_age_d15N_model)  # remove values with negative np.diff(ice_age)
+    # d15n_smooth = smooth_data(cop, d15n_data_regrid, gas_age_d15N_model, gas_age_d15N_model)[0]
+    # d15n_err_smooth = smooth_data(cop, d15n_err_regrid, gas_age_d15N_model, gas_age_d15N_model)[0]
+
+    return d15n_data_regrid, d15n_err_regrid
+
+
 def get_d15N_model(path_model, mode, cop):
     # Data from model
     # ---------------------------------------------------------------------------------------------------
