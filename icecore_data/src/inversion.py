@@ -18,7 +18,7 @@ cop_ = 1 / 200.  # frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
 cod_mode = '0_diff'
 
-optimizer = 'minimize'   # 'least_squares', 'minimize'
+optimizer = 'minimize'  # 'least_squares', 'minimize'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Data
@@ -42,40 +42,73 @@ acc_interval = get_interval_acc(acc, ice_age_full, start_year_, end_year_)
 input_acc = np.array([ice_age_interval, acc_interval])
 np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc, delimiter=",")
 
+opt_dict = {'count': np.zeros([100, 1]),
+            'a': np.zeros([100, 1]),
+            'b': np.zeros([100, 1]),
+            'c': np.zeros([100, 1]),
+            'd': np.zeros([100, 1]),
+            'd15N@cod': np.zeros([100, np.shape(ice_age_interval)[0]]),
+            'ice_age': np.zeros([100, np.shape(ice_age_interval)[0]]),
+            'gas_age': np.zeros([100, np.shape(ice_age_interval)[0]])}
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Define the function to optimize
 # ---------------------------------
-
 def fun_v(theta):
+    count = int(np.max(opt_dict['count']))
     a = theta[0]
     b = theta[1]
     c = theta[2]
     temperature = a * d18o_smooth ** 2 + b * d18o_smooth + c
     input_temperature = np.array([ice_age_interval, temperature])
+
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
     os.chdir('../../CFM_main/')
     os.system('python3 main.py FirnAir_NGRIP.json -n')
     os.chdir('../icecore_data/src/')
+
     d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
     d15N2_data_ = get_d15N_data(data_path, iceAge_model_, cop=1 / 200.)[0]
 
+    opt_dict['a'][count] = a
+    opt_dict['b'][count] = b
+    opt_dict['c'][count] = c
+    opt_dict['d15N@cod'][count, :] = d15N2_model_
+    opt_dict['ice_age'][count, :] = iceAge_model_
+    opt_dict['gas_age'][count, :] = gasAge_model_
+    count += 1
+    opt_dict['count'][count] = count
     return d15N2_model_ - d15N2_data_
 
 
 def fun(theta):
+    count = int(np.max(opt_dict['count']))
+    print('iteration', count)
+
     a = theta[0]
     b = theta[1]
     c = theta[2]
     temperature = a * d18o_smooth ** 2 + b * d18o_smooth + c
     input_temperature = np.array([ice_age_interval, temperature])
+
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
     os.chdir('../../CFM_main/')
     os.system('python3 main.py FirnAir_NGRIP.json -n')
     os.chdir('../icecore_data/src/')
+
     d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
     d15N2_data_ = get_d15N_data(data_path, iceAge_model_, cop=1 / 200.)[0]
-    return 1/(np.shape(d15N2_model_)[0] - 1) * np.sum((d15N2_model_ - d15N2_data_)**2)
+
+    opt_dict['a'][count] = a
+    opt_dict['b'][count] = b
+    opt_dict['c'][count] = c
+    opt_dict['d15N@cod'][count, :] = d15N2_model_
+    opt_dict['ice_age'][count, :] = iceAge_model_
+    opt_dict['gas_age'][count, :] = gasAge_model_
+    count += 1
+    opt_dict['count'][count] = count
+    return 1 / (np.shape(d15N2_model_)[0] - 1) * np.sum((d15N2_model_ - d15N2_data_) ** 2)
 
 
 def plot_fun(theta0, theta1):
@@ -146,7 +179,7 @@ if optimizer == 'least_squares':
     print('Theta1: ', res.x)
     print('Bounds: ', res.active_mask)
     print('Residuals: ', res.fun)
-    print('Mean Residuals:', 1/(np.shape(res.fun)[0] - 1) * np.sum(res.fun))
+    print('Mean Residuals:', 1 / (np.shape(res.fun)[0] - 1) * np.sum(res.fun))
     print('Sigma²: ', 1 / np.shape(res.fun)[0] * np.sum(res.fun ** 2))
     print('Cost function: ', res.cost)
     print('----------------------------------------------')
@@ -160,7 +193,6 @@ if optimizer == 'least_squares':
     theta_1 = res.x
     plot_fun(theta_0, theta_1)
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 # MINIMIZE  "BFGS"
 # ----------------------
@@ -168,6 +200,7 @@ if optimizer == 'least_squares':
 if optimizer == 'minimize':
     theta_0 = [53013.175, 6612.959, 138.993]
     res_c = minimize(fun, theta_0, method='BFGS', options={'eps': 1e-3})
+
     theta_c_1 = res_c.x
 
     print('----------------------------------------------')
@@ -179,4 +212,3 @@ if optimizer == 'minimize':
     # print('Mean Residuals:', 1 / (np.shape(res_c.fun)[0] - 1) * np.sum(res_c.fun))
 
     plot_fun(theta_0, theta_c_1)
-
