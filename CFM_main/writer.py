@@ -52,10 +52,6 @@ def write_nospin_hdf5(self, Mout_dict, forcing_dict=None):
         forcing_out = np.zeros([ll, 5])
         forcing_out[:, 0] = forcing_dict['dectime'][: ll]
         forcing_out[:, 1] = forcing_dict['TSKIN'][: ll]
-        print(np.shape(forcing_dict['TSKIN'][: ll]))
-        print(np.shape(forcing_dict['TSKIN']))
-        print(np.shape(forcing_dict['BDOT'][: ll]))
-        print(np.shape(forcing_dict['BDOT']))
         forcing_out[:, 2] = forcing_dict['BDOT'][: ll]
 
         try:
