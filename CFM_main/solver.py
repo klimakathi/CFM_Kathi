@@ -32,6 +32,18 @@ def solver(a_U, a_D, a_P, b):
     diags = (np.append([a_U, -a_P], [a_D], axis=0))
     cols = np.array([1, 0, -1])
 
+    # au = open('a_U.txt', 'a+')
+    # au.write(str(np.sum(abs(a_U))) + '\n')
+
+    # ad = open('a_D.txt', 'a')
+    # ad.write(str(np.sum(abs(a_D))) + '\n')
+
+    # ap = open('a_P.txt', 'a')
+    # ap.write(str(np.sum(abs(a_P))) + '\n')
+
+    # ab = open('a_b.txt', 'a')
+    # ab.write(str(np.sum(abs(b))) + '\n')
+
    # start = time.time_ns()
     big_A = spdiags(diags, cols, nz, nz, format='csc')
    # end = time.time_ns()
@@ -139,6 +151,9 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             S_C = S_C_0 * phi_t
             b_0 = S_C * dZ
 
+            oppor = open('dZ.txt', 'a+')
+            oppor.write(str(np.sum(abs(dZ))) + '\n')
+
             rho_edges = np.interp(z_edges, Z_P, airdict['rho'])
 
             # t_before = t.time_ns()
@@ -158,13 +173,13 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             por_cl_edges = np.interp(z_edges, Z_P, por_cl_airdict)
             dscl = np.gradient(por_cl_edges, z_edges)
 
-            start = t.time_ns()
+            # start = t.time_ns()
             w_edges = w(z_airdict, Tz_airdict, dt_airdict, por_op_airdict, pressure_airdict, advection_type_airdict, por_tot_airdict,
                         por_cl_airdict, w_firn_airdict, z_co_airdict, z_edges, rho_edges, Z_P, dZ, dPdz, por_cl_edges, dscl)  # advection term (upward relative motion due to porosity changing)
-            end = t.time_ns()
-            total_time_nanoseconds = end - start
-            all_times = open('w_1000yr_njit.txt', 'a+')
-            all_times.write(str(total_time_nanoseconds) + '\n')
+            # end = t.time_ns()
+            # total_time_nanoseconds = end - start
+            # all_times = open('w_1000yr_njit.txt', 'a+')
+            # all_times.write(str(total_time_nanoseconds) + '\n')
 
             """
             if mode == 'diffusion':
@@ -204,6 +219,7 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             a_D = D_d * A(P_d) + F_upwind(-F_d)
 
             a_P_0 = airdict['por_op'] * dZ / dt
+
         #######################################
         ### end gas physics portion ###########
         #######################################

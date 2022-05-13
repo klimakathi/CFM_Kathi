@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # temps_interval = smooth_data(cop_, temps_interval, ice_age_interval, ice_age_interval)[0]
     # temps_err_interval = smooth_data(cop_, temps_err_interval, ice_age_interval, ice_age_interval)[0]
 
-    plot_compare_minimizers = False
+    plot_compare_minimizers = True
     if plot_compare_minimizers:
         fig, axs = plt.subplots(4, sharex=True, sharey=False)
         fig.set_figheight(15)
