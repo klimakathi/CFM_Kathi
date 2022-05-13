@@ -210,7 +210,6 @@ class FirnDensityNoSpin:
             input_temp[input_temp > T_MELT] = T_MELT
 
             self.forcing_dict['TSKIN'] = input_temp_full
-            print('tskin: ', np.shape(input_temp_full))
             self.forcing_dict['dectime'] = input_year_temp_full
 
         # bdot ---------------------------------------------------------------------------------------------------------
@@ -224,7 +223,6 @@ class FirnDensityNoSpin:
                 os.path.join(self.c['InputFileFolder'], self.c['InputFileNamebdot']), updatedStartDate)
         #TODO: this is just to try writing a full BDOT file with 10000 time steps to output file...
         self.forcing_dict['BDOT'] = input_bdot_full
-        print(np.shape(input_bdot_full))
 
 
         #####################
@@ -411,7 +409,6 @@ class FirnDensityNoSpin:
                                    fill_value='extrapolate')  # interpolation function
         self.bdot = bsf(self.modeltime)  # m ice equivalent per year
         # self.forcing_dict['BDOT'] = self.bdot
-        # print(np.shape(self.bdot))
         self.bdot[self.bdot < 1e-6] = 0.0
 
         self.bdotSec = self.bdot / S_PER_YEAR / (
