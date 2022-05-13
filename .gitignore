@@ -140,3 +140,8 @@ docs/_templates
 /CFM_main/z_edges.csv
 /CFM_main/z_edges.npy
 /CFM_main/Z_P.npy
+
+/.idea/
+/CFM_main/.idea/
+
+/icecore_data/src/resultsFolder/
