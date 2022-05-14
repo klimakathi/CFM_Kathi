@@ -151,9 +151,6 @@ def transient_solve_TR(z_edges, Z_P, nt, dt, Gamma_P, phi_0, nz_P, nz_fv, phi_s,
             S_C = S_C_0 * phi_t
             b_0 = S_C * dZ
 
-            oppor = open('dZ.txt', 'a+')
-            oppor.write(str(np.sum(abs(dZ))) + '\n')
-
             rho_edges = np.interp(z_edges, Z_P, airdict['rho'])
 
             # t_before = t.time_ns()
