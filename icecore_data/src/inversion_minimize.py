@@ -2,6 +2,7 @@ from scipy.optimize import minimize
 from read_d18O import *
 from read_d15N import *
 from read_temp_acc import *
+from secondSpin import *
 import os
 
 plt.rc('text', usetex=True)
@@ -10,13 +11,16 @@ plt.rc('font', family='serif')
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
-start_year_ = -50000  # start input year
-end_year_ = -45000  # end input year
+start_year_ = -50000                        # start input year
+end_year_ = -45000                          # end input year
+yearSecondSpin = 5000                       # second spin up using the first 5000 years of the first main run
+start_year_spin = start_year_ - yearSecondSpin
+
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
-cop_ = 1 / 200.  # frequency for cubic smoothing spline (low pass filter)
-time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
+cop_ = 1 / 200.                             # frequency for cubic smoothing spline (low pass filter)
+time_grid_stp_ = 20                         # step length time grid --> also for cubic smoothing spline
 cod_mode = 'cod'
 
 optimizer = 'minimize'                      # 'least_squares', 'minimize'
@@ -30,6 +34,7 @@ N = 1000                                    # number of max iterations
 
 data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
+spin_path = '../../CFM_main/resultsFolder/CFMspin_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -39,20 +44,23 @@ model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300
 depth_full, d18O_full, ice_age_full = read_data_d18O(data_path)
 depth_interval, d18O_interval, ice_age_interval = get_interval_data(depth_full, d18O_full,
                                                                     ice_age_full,
-                                                                    start_year_, end_year_,
+                                                                    start_year_spin, end_year_,
                                                                     time_grid_stp_,
                                                                     cop_)[:3]
 d18o_smooth = smooth_data(1 / 200., d18O_interval, ice_age_interval, ice_age_interval)[0]
 
 acc = read_acc(data_path)
-acc_interval = get_interval_acc(acc, ice_age_full, start_year_, end_year_)
+acc_interval = get_interval_acc(acc, ice_age_full, start_year_spin, end_year_)
 input_acc = np.array([ice_age_interval, acc_interval])
 np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc, delimiter=",")
 
 years = (np.max(ice_age_interval) - np.min(ice_age_interval)) * 1.0
 dt = S_PER_YEAR / stpsPerYear  # seconds per time step
 stp = int(years * S_PER_YEAR / dt)  # -1       # total number of time steps, as integer
-modeltime = np.linspace(start_year_, end_year_, stp + 1)[:-1]
+modeltime = np.linspace(start_year_spin, end_year_, stp + 1)[:-1]
+
+index_secondSpin = find_second_spin_index(ice_age_interval, start_year_)
+print('index:', index_secondSpin)
 
 opt_dict = {'count': np.zeros([N, 1], dtype=int),
             'a': np.zeros([N, 1]),
@@ -76,20 +84,32 @@ def fun(theta):
     a = theta[0]
     b = theta[1]
     c = theta[2]
-    temperature = a * d18o_smooth ** 2 + b * d18o_smooth + c
-    input_temperature = np.array([ice_age_interval, temperature])
 
-    np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
-    os.chdir('../../CFM_main/')
     if count == 0:
-        os.system('python3 main.py FirnAir_NGRIP.json -n')
-    else:
-        os.system('python3 main.py FirnAir_NGRIP.json')
-    os.chdir('../icecore_data/src/')
+        temperature = a * d18o_smooth ** 2 + b * d18o_smooth + c
+        input_temperature = np.array([ice_age_interval, temperature])
 
-    d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
-    d15N2_data_ = get_d15N_data(data_path, iceAge_model_, cop=1 / 200.)[0]
-    cost_func = 1 / (np.shape(d15N2_model_)[0] - 1) * np.sum((d15N2_model_ - d15N2_data_) ** 2)
+        np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
+        os.chdir('../../CFM_main/')
+        os.system('python3 main.py FirnAir_NGRIP.json -n')
+        os.chdir('../icecore_data/src/')
+
+        d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
+        d15N2_data_ = get_d15N_data(data_path, iceAge_model_, cop=1 / 200.)[0]
+        cost_func = 1 / (np.shape(d15N2_model_)[0] - 1) * np.sum((d15N2_model_ - d15N2_data_) ** 2)
+
+    else:
+        temperature = a * d18o_smooth[index_secondSpin:] ** 2 + b * d18o_smooth[index_secondSpin:] + c
+        input_temperature = np.array([ice_age_interval[index_secondSpin:], temperature])
+
+        np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
+        os.chdir('../../CFM_main/')
+        os.system('python3 main.py FirnAir_NGRIP.json')
+        os.chdir('../icecore_data/src/')
+
+        d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
+        d15N2_data_ = get_d15N_data(data_path, iceAge_model_, cop=1 / 200.)[0]
+        cost_func = 1 / (np.shape(d15N2_model_)[0] - 1) * np.sum((d15N2_model_ - d15N2_data_) ** 2)
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
