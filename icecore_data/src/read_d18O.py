@@ -16,11 +16,6 @@ def find_start_end_index(ice_age_data, start_year, end_year):
     return t_start_ind, t_end_ind
 
 
-def find_second_spin_index(ice_age_data, second_spin_index):
-    t_second_spin_ind = np.min(np.where(ice_age_data <= second_spin_index))
-    return t_second_spin_ind
-
-
 def get_interval_data(depth_data, d18O_data, ice_age_data, start_year, end_year, time_grid_stp, cop):
     t_start_ind, t_end_ind = find_start_end_index(ice_age_data, start_year, end_year)
     depth_data_interval = depth_data[t_start_ind: t_end_ind]
