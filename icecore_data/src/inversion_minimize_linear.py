@@ -1,4 +1,4 @@
-from scipy.optimize import minimize
+from scipy.optimize import minimize, fmin
 from read_d18O import *
 from read_d15N import *
 from read_temp_acc import *
@@ -111,12 +111,11 @@ def fun(theta):
 def plot_fun(theta0, theta1):
     a0 = theta0[0]
     b0 = theta0[1]
-    c0 = theta0[2]
 
     a1 = theta1[0]
     b1 = theta1[1]
-    c1 = theta1[2]
-    temperature0 = a0 * d18o_smooth ** 2 + b0 * d18o_smooth + c0
+
+    temperature0 = 1. / a0 * d18o_smooth + b0
     input_temperature0 = np.array([ice_age_interval, temperature0])
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature0, delimiter=",")
     os.chdir('../../CFM_main/')
@@ -124,7 +123,7 @@ def plot_fun(theta0, theta1):
     os.chdir('../icecore_data/src/')
     d15N2_model0, iceAge_model0, gasAge_model0, deltaAge0 = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
 
-    temperature1 = a1 * d18o_smooth ** 2 + b1 * d18o_smooth + c1
+    temperature1 = 1./ a1 * d18o_smooth + b1
     input_temperature1 = np.array([ice_age_interval, temperature1])
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature1, delimiter=",")
     os.chdir('../../CFM_main/')
@@ -135,9 +134,9 @@ def plot_fun(theta0, theta1):
     d15N2_data_, d15N2_err_ = get_d15N_data(data_path, iceAge_model1, cop=1 / 200.)
 
     plt.plot(iceAge_model0, d15N2_model0, label='Barnola first guess: a=%5.3f K, b=%5.3f K, c=%5.3f K' % (
-        theta0[0], theta0[1], theta0[2]), linewidth=0.9)
+        theta0[0], theta0[1]), linewidth=0.9)
     plt.plot(iceAge_model1, d15N2_model1, label='Barnola best fit: a=%5.3f K, b=%5.3f K, c=%5.3f K' % (
-        theta1[0], theta1[1], theta1[2]), linewidth=0.9)
+        theta1[0], theta1[1]), linewidth=0.9)
     plt.plot(iceAge_model1, d15N2_data_, 'ko', label='data', markersize=1)
     plt.plot(iceAge_model1, d15N2_data_ + d15N2_err_, 'k-.', linewidth=0.9, alpha=0.5)
     plt.plot(iceAge_model1, d15N2_data_ - d15N2_err_, 'k-.', linewidth=0.9, alpha=0.5)
@@ -154,7 +153,23 @@ def plot_fun(theta0, theta1):
 # ----------------------------------------------------------------------------------------------------------------------
 # MINIMIZE
 # ----------------------
-res_c = minimize(fun, theta_0, method='Nelder-Mead', options={'maxiter': 70})
+if optimizer == 'minimizer':
+    res_c = minimize(fun, theta_0, method='Nelder-Mead')
+    theta_c_1 = res_c.x
+
+    print('----------------------------------------------')
+    print('|            INFO MINIMIZE                   |')
+    print('----------------------------------------------')
+    print(res_c.message)
+    print(res_c.success)
+    print('Theta1: ', theta_c_1)
+
+if optimizer == 'fmin':
+    res_c = fmin(fun, theta_0, method='Nelder-Mead')
+    theta_c_1 = res_c[0]
+
+
+
 entry_0 = np.where(opt_dict['count'] == 0)[0]
 opt_dict['count'] = np.delete(opt_dict['count'], entry_0[1:])
 opt_dict['count'] = opt_dict['count'][:-1]
@@ -164,13 +179,6 @@ with h5py.File('resultsFolder/resultsInversion_minimizer.h5', 'w') as f:
         f[key] = opt_dict[key][:max_int]
 f.close()
 
-theta_c_1 = res_c.x
 
-print('----------------------------------------------')
-print('|            INFO MINIMIZE                   |')
-print('----------------------------------------------')
-print(res_c.message)
-print(res_c.success)
-print('Theta1: ', theta_c_1)
 
 plot_fun(theta_0, theta_c_1)
