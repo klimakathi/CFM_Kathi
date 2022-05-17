@@ -146,3 +146,5 @@ docs/_templates
 
 /icecore_data/src/resultsFolder/
 /githubtoken_google_drive.odt
+
+/CFM_main/CFMinput/*.csv
