@@ -26,6 +26,14 @@ def get_interval_data(depth_data, d18O_data, ice_age_data, start_year, end_year,
     return depth_data_interval, d18O_interval, ice_age_interval, d18O_smooth, time_grid
 
 
+def get_interval_data_noTimeGrid(depth_data, d18O_data, ice_age_data, start_year, end_year, cop):
+    t_start_ind, t_end_ind = find_start_end_index(ice_age_data, start_year, end_year)
+    depth_data_interval = depth_data[t_start_ind: t_end_ind]
+    d18O_interval = d18O_data[t_start_ind: t_end_ind]
+    ice_age_interval = ice_age_data[t_start_ind: t_end_ind]
+    return depth_data_interval, d18O_interval, ice_age_interval
+
+
 def new_time_grid(start_year, end_year, time_grid_stp):
     time_grid = np.arange(start_year, end_year, time_grid_stp)
     return time_grid
