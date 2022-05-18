@@ -19,7 +19,7 @@
 "FirnAir": true,
 "AirConfigName": "AirConfig.json",
 "TWriteInt": 1,
-"TWriteStart": -50000,
+"TWriteStart": -45000,
 "int_type": "linear",
 "int_type_options": ["nearest","linear"],
 "SeasonalTcycle": false,

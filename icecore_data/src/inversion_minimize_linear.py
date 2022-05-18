@@ -12,13 +12,13 @@ plt.rc('font', family='serif')
 
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
-results_path = 'resultsFolder/2022-05-18_02_resultsInversion_minimizer.h5'
+results_path = 'resultsFolder/2022-05-18_04_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
-start_year_ = -50000  # start input year
-end_year_ = -45000  # end input year
+start_year_ = -44000  # start input year
+end_year_ = -38500  # end input year
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
@@ -50,8 +50,8 @@ t = 1. / theta_0[0] * d18o_smooth + theta_0[1]
 
 temp, temp_err = read_temp(data_path)
 temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_, end_year_)[0]
-plt.plot(t)
-plt.plot(temp_interval)
+plt.plot(ice_age_interval, t)
+plt.plot(ice_age_interval, temp_interval)
 plt.show()
 
 acc = read_acc(data_path)
@@ -102,15 +102,15 @@ def fun(theta):
         d15N2_data_ = get_d15N_data(data_path, iceAge_model_)[0]
     else:
         d15N2_data_ = get_d15N_data_gasage(data_path, gasAge_model_)[0]
-    cost_func = 1 / (np.shape(d15N2_model_[minimizer_interval:])[0] - 1) * np.sum((d15N2_model_[minimizer_interval] -
+    cost_func = 1 / (np.shape(d15N2_model_[-minimizer_interval:])[0] - 1) * np.sum((d15N2_model_[-minimizer_interval:] -
                                                                                    d15N2_data_[
-                                                                                       minimizer_interval]) ** 2)
+                                                                                       -minimizer_interval:]) ** 2)
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
-    opt_dict['d15N@cod'][count, :] = d15N2_model_[minimizer_interval:]
-    opt_dict['ice_age'][count, :] = iceAge_model_[minimizer_interval:]
-    opt_dict['gas_age'][count, :] = gasAge_model_[minimizer_interval:]
+    opt_dict['d15N@cod'][count, :] = d15N2_model_[-minimizer_interval:]
+    opt_dict['ice_age'][count, :] = iceAge_model_[-minimizer_interval:]
+    opt_dict['gas_age'][count, :] = gasAge_model_[-minimizer_interval:]
     opt_dict['cost_function'][count] = cost_func
     count += 1
     opt_dict['count'][count] = count

@@ -8,7 +8,7 @@ import h5py
 import os
 
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-model_path = 'results/2022-05-18_01_resultsInversion_minimizer.h5'
+model_path = '../../../finalResults/inversion/minimizer_NelderMead/2022-05-18_02_resultsInversion_minimizer.h5'
 
 
 plt.rc('text', usetex=True)
@@ -17,8 +17,8 @@ plt.rc('font', family='serif')
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
-start_year_ = -50000  # start input year
-end_year_ = -45000  # end input year
+start_year_ = -45000  # start input year
+end_year_ = -40000  # end input year
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
@@ -121,7 +121,7 @@ else:
     axs[1].plot(gas_age[0, :], d15n[0, :], label='first guess')
     axs[1].plot(gas_age[-1, :], d15n[-1, :], label='Best fit')
     axs[1].set_xlabel('GICC05modelext gas age [yr]')
-axs[1].set_ylim([0.22, 0.55])
+axs[1].set_ylim([0.15, 0.55])
 axs[1].set_ylabel('$\delta^{15}$N$_2$ [‰]')
 axs[1].grid(linestyle='--', color='gray', lw='0.5')
 axs[1].legend()
