@@ -16,7 +16,7 @@ plt.rc('font', family='serif')
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
-
+print('bla')
 start_year_ = -45000  # start input year
 end_year_ = -40000  # end input year
 stpsPerYear = 0.5
