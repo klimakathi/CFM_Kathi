@@ -12,7 +12,7 @@ plt.rc('font', family='serif')
 
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
-results_path = 'resultsFolder/2022-05-18_01_resultsInversion_minimizer.h5'
+results_path = 'resultsFolder/2022-05-18_02_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -28,10 +28,11 @@ cod_mode = 'cod'
 
 optimizer = 'minimize'  # 'least_squares', 'minimize'
 method = 'Nelder-Mead'  # 'BFGS', 'Nelder-Mead'
-theta_0 = [0.35, 80]    # initial guess
+theta_0 = [0.42, 75]  # initial guess
 N = 1000  # number of max iterations
 
-d15n_age = 'gas_age'  # 'gas_age', 'ice_age'
+d15n_age = 'ice_age'  # 'gas_age', 'ice_age'
+frac_minimizer_interval = 0.5
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Read d18O data from NGRIP
@@ -45,7 +46,7 @@ depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(d
 d18O_interval_perm = d18O_interval * 1000
 d18o_smooth = smooth_data(1 / 200., d18O_interval_perm, ice_age_interval, ice_age_interval)[0]
 
-t = 1./theta_0[0] * d18o_smooth + theta_0[1]
+t = 1. / theta_0[0] * d18o_smooth + theta_0[1]
 
 temp, temp_err = read_temp(data_path)
 temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_, end_year_)[0]
@@ -62,15 +63,16 @@ years = (np.max(ice_age_interval) - np.min(ice_age_interval)) * 1.0
 dt = S_PER_YEAR / stpsPerYear  # seconds per time step
 stp = int(years * S_PER_YEAR / dt)  # -1       # total number of time steps, as integer
 modeltime = np.linspace(start_year_, end_year_, stp + 1)[:-1]
+minimizer_interval = int(np.shape(modeltime)[0] * frac_minimizer_interval)
 
 opt_dict = {'count': np.zeros([N, 1], dtype=int),
             'a': np.zeros([N, 1]),
             'b': np.zeros([N, 1]),
             'c': np.zeros([N, 1]),
             'd': np.zeros([N, 1]),
-            'd15N@cod': np.zeros([N, np.shape(modeltime)[0]]),
-            'ice_age': np.zeros([N, np.shape(modeltime)[0]]),
-            'gas_age': np.zeros([N, np.shape(modeltime)[0]]),
+            'd15N@cod': np.zeros([N, minimizer_interval]),
+            'ice_age': np.zeros([N, minimizer_interval]),
+            'gas_age': np.zeros([N, minimizer_interval]),
             'cost_function': np.zeros([N, 1])}
 
 
@@ -100,13 +102,15 @@ def fun(theta):
         d15N2_data_ = get_d15N_data(data_path, iceAge_model_)[0]
     else:
         d15N2_data_ = get_d15N_data_gasage(data_path, gasAge_model_)[0]
-    cost_func = 1 / (np.shape(d15N2_model_)[0] - 1) * np.sum((d15N2_model_ - d15N2_data_) ** 2)
+    cost_func = 1 / (np.shape(d15N2_model_[minimizer_interval:])[0] - 1) * np.sum((d15N2_model_[minimizer_interval] -
+                                                                                   d15N2_data_[
+                                                                                       minimizer_interval]) ** 2)
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
-    opt_dict['d15N@cod'][count, :] = d15N2_model_
-    opt_dict['ice_age'][count, :] = iceAge_model_
-    opt_dict['gas_age'][count, :] = gasAge_model_
+    opt_dict['d15N@cod'][count, :] = d15N2_model_[minimizer_interval:]
+    opt_dict['ice_age'][count, :] = iceAge_model_[minimizer_interval:]
+    opt_dict['gas_age'][count, :] = gasAge_model_[minimizer_interval:]
     opt_dict['cost_function'][count] = cost_func
     count += 1
     opt_dict['count'][count] = count
@@ -121,7 +125,7 @@ def plot_fun(theta0, theta1):
     a1 = theta1[0]
     b1 = theta1[1]
 
-    temperature0 = 1./a0 * d18o_smooth + b0
+    temperature0 = 1. / a0 * d18o_smooth + b0
     input_temperature0 = np.array([ice_age_interval, temperature0])
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature0, delimiter=",")
     os.chdir('../../CFM_main/')
@@ -129,7 +133,7 @@ def plot_fun(theta0, theta1):
     os.chdir('../icecore_data/src/')
     d15N2_model0, iceAge_model0, gasAge_model0, deltaAge0 = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
 
-    temperature1 = 1./a1 * d18o_smooth + b1
+    temperature1 = 1. / a1 * d18o_smooth + b1
     input_temperature1 = np.array([ice_age_interval, temperature1])
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature1, delimiter=",")
     os.chdir('../../CFM_main/')
@@ -191,5 +195,3 @@ print('----------------------------------------------')
 print(res_c.message)
 print(res_c.success)
 print('Theta1: ', theta_c_1)
-
-
