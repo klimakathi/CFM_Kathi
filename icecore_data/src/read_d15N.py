@@ -6,7 +6,7 @@ import h5py
 import matplotlib.pyplot as plt
 
 
-def get_d15N_data(path_data, ice_age_d15N_model, cop):
+def get_d15N_data(path_data, ice_age_d15N_model):
     # Data from ice core
     # ---------------------------------------------------------------------------------------------------
     df = pd.read_excel(path_data)
@@ -36,7 +36,7 @@ def get_d15N_data(path_data, ice_age_d15N_model, cop):
     return d15n_data_regrid, d15n_err_regrid
 
 
-def get_d15N_data_gasage(path_data, gas_age_d15N_model, cop):
+def get_d15N_data_gasage(path_data, gas_age_d15N_model):
     # Data from ice core
     # ---------------------------------------------------------------------------------------------------
     df = pd.read_excel(path_data)
