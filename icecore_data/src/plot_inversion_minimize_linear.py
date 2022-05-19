@@ -1,14 +1,10 @@
-import matplotlib.pyplot as plt
-import numpy as np
 from read_d18O import *
 from read_d15N import *
-import h5py as h5
 from read_temp_acc import *
 import h5py
-import os
 
-data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-model_path = '../../../finalResults/inversion/minimizer_NelderMead/2022-05-18_02_resultsInversion_minimizer.h5'
+data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+model_path = '../../../finalResults/inversion/fminsearch_NelderMead/2022-05-19_01_resultsInversion_fmin.h5'
 
 
 plt.rc('text', usetex=True)
@@ -16,9 +12,9 @@ plt.rc('font', family='serif')
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
-print('bla')
-start_year_ = -45000  # start input year
-end_year_ = -40000  # end input year
+
+start_year_ = -44000  # start input year
+end_year_ = -38500  # end input year
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
@@ -26,7 +22,7 @@ cop_ = 1 / 200.  # frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
 cod_mode = 'cod'
 
-d15n_age = 'ice_age'  # 'gas_age'
+d15n_age = 'gas_age'  # 'gas_age'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Read d18O data from NGRIP

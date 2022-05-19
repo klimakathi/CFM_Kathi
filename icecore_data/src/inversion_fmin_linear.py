@@ -7,19 +7,18 @@ import os
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
-print('bla')
 # ----------------------------------------------------------------------------------------------------------------------
 # Data
 
-data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
-results_path = 'resultsFolder/2022-05-18_03_resultsInversion_fmin.h5'
+results_path = 'resultsFolder/2022-05-19_01_resultsInversion_fmin.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
-start_year_ = -50000  # start input year
-end_year_ = -45000  # end input year
+start_year_ = -44000  # start input year
+end_year_ = -38500  # end input year
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
@@ -71,9 +70,9 @@ opt_dict = {'count': np.zeros([N, 1], dtype=int),
             'b': np.zeros([N, 1]),
             'c': np.zeros([N, 1]),
             'd': np.zeros([N, 1]),
-            'd15N@cod': np.zeros([N, minimizer_interval]),
-            'ice_age': np.zeros([N, minimizer_interval]),
-            'gas_age': np.zeros([N, minimizer_interval]),
+            'd15N@cod': np.zeros([N, np.shape(modeltime)[0]]),
+            'ice_age': np.zeros([N, np.shape(modeltime)[0]]),
+            'gas_age': np.zeros([N, np.shape(modeltime)[0]]),
             'cost_function': np.zeros([N, 1])}
 
 
@@ -103,15 +102,15 @@ def fun(theta):
         d15N2_data_ = get_d15N_data(data_path, iceAge_model_)[0]
     else:
         d15N2_data_ = get_d15N_data_gasage(data_path, gasAge_model_)[0]
-    cost_func = 1 / (np.shape(d15N2_model_[minimizer_interval:])[0] - 1) * np.sum((d15N2_model_[minimizer_interval] -
+    cost_func = 1 / (np.shape(d15N2_model_[-minimizer_interval:])[0] - 1) * np.sum((d15N2_model_[-minimizer_interval:] -
                                                                                    d15N2_data_[
-                                                                                       minimizer_interval]) ** 2)
+                                                                                       -minimizer_interval:]) ** 2)
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
-    opt_dict['d15N@cod'][count, :] = d15N2_model_[minimizer_interval:]
-    opt_dict['ice_age'][count, :] = iceAge_model_[minimizer_interval:]
-    opt_dict['gas_age'][count, :] = gasAge_model_[minimizer_interval:]
+    opt_dict['d15N@cod'][count, :] = d15N2_model_[:]
+    opt_dict['ice_age'][count, :] = iceAge_model_[:]
+    opt_dict['gas_age'][count, :] = gasAge_model_[:]
     opt_dict['cost_function'][count] = cost_func
     count += 1
     opt_dict['count'][count] = count
@@ -178,7 +177,7 @@ def plot_fun(theta0, theta1):
 # MINIMIZE
 # ----------------------
 
-res_c = minimize(fun, theta_0, method='Nelder-Mead')
+res_c = fmin(fun, theta_0)
 entry_0 = np.where(opt_dict['count'] == 0)[0]
 opt_dict['count'] = np.delete(opt_dict['count'], entry_0[1:])
 opt_dict['count'] = opt_dict['count'][:-1]
@@ -188,7 +187,7 @@ with h5py.File(results_path, 'w') as f:
         f[key] = opt_dict[key][:max_int]
 f.close()
 
-theta_c_1 = res_c.x
+theta_c_1 = res_c[0]
 
 print('----------------------------------------------')
 print('|            INFO MINIMIZE                   |')
