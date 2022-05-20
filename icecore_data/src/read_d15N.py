@@ -45,10 +45,12 @@ def get_d15N_data_interval(path_data, ice_age_d15N_model):
     return ice_age_d15n_interval, gas_age_d15n_interval, d15n_interval, d15n_err_interval
 
 
-def interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, ice_age_data):
+def interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, gas_age_model, ice_age_data):
     Data_Model = interpolate.interp1d(ice_age_model, d15n_model, 'linear', fill_value='extrapolate')
-    d15n_model_interp = Data_Model(ice_age_data)
-    return d15n_model_interp
+    d15n_model_interp_ice_age = Data_Model(ice_age_data)
+    IA_GA = interpolate.interp1d(ice_age_model, gas_age_model, 'linear', fill_value='extrapolate')
+    gas_age_model_interp = IA_GA(ice_age_data)
+    return d15n_model_interp_ice_age, gas_age_model_interp
 
 
 def get_d15N_model(path_model, mode, cop):
@@ -197,11 +199,16 @@ if __name__ == '__main__':
     print(ice_age_model)
 
     ice_age_int, gas_age_int, d15N_int, d15N_err_int = get_d15N_data_interval(data_path2, ice_age_model)
-    d15N_model_interp = interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, ice_age_int)
+    d15N_model_interp, gasage_interp = interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, gas_age_model, ice_age_int)
 
     # plt.plot(ice_age_model, d15n_model, label='model')
     plt.plot(ice_age_int, d15N_int, 'ro', markersize=1, label='data')
     plt.plot(ice_age_int, d15N_model_interp, 'bv', markersize=1, label='model interpolated')
+    plt.legend()
+    plt.show()
+
+    plt.plot(gas_age_int, d15N_int, 'ro', markersize=1, label='data')
+    plt.plot(gasage_interp, d15N_model_interp, 'bv', markersize=1, label='model interpolated')
     plt.legend()
     plt.show()
 
