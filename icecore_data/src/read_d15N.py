@@ -5,6 +5,7 @@ from smoothing_splines import *
 import h5py
 import matplotlib.pyplot as plt
 from read_d18O import get_interval_data_noTimeGrid, find_start_end_index
+from calculate_d15N import *
 
 
 def get_d15N_data(path_data):
@@ -53,70 +54,84 @@ def interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, gas_age_model, i
     return d15n_model_interp_ice_age, gas_age_model_interp
 
 
-def get_d15N_model(path_model, mode, cop):
+def get_d15N_model(path_model, mode, firnair, cop):
     # Data from model
     # ---------------------------------------------------------------------------------------------------
     file = h5py.File(path_model, 'r')
+    depth_model = file['depth'][:]
+    ice_age_model = file["age"][:]
 
-    if mode == 'cod':
-        # Get data at Martinerie close-off depth
-        close_off_depth = file["BCO"][:, 2]
-        depth_model = file['depth']
-        d15n_model = file["d15N2"][:] - 1.
-        gas_age_model = file["gas_age"][:]
-        ice_age_model = file["age"][:]
-        d15n_cod = np.ones_like(close_off_depth)
-        gas_age_cod = np.ones_like(close_off_depth)
+    if firnair:
+        if mode == 'cod':
+            # Get data at Martinerie close-off depth
+            close_off_depth = file["BCO"][:, 2]
+            gas_age_model = file["gas_age"][:]
+            d15n_model = file["d15N2"][:] - 1.
+            d15n_cod = np.ones_like(close_off_depth)
+            gas_age_cod = np.ones_like(close_off_depth)
+            ice_age_cod = np.ones_like(close_off_depth)
+
+        if mode == 'lid':
+            # Get data at LID
+            close_off_depth = file["BCO"][:, 6]
+            gas_age_model = file["gas_age"][:]
+            d15n_model = file["d15N2"][:] - 1.
+            d15n_cod = np.ones_like(close_off_depth)
+            gas_age_cod = np.ones_like(close_off_depth)
+            ice_age_cod = np.ones_like(close_off_depth)
+
+        if mode == '0_diff':
+            # Get data at depth where D_eff = 0
+            diffusivity = file['diffusivity'][:]
+            gas_age_model = file["gas_age"][:]
+            d15n_model = file["d15N2"][:] - 1.
+            index = np.zeros(np.shape(diffusivity)[0])
+            ice_age_cod = np.zeros(np.shape(diffusivity)[0])
+            gas_age_cod = np.zeros(np.shape(diffusivity)[0])
+            d15n_cod = np.zeros(np.shape(diffusivity)[0])
+            close_off_depth = np.zeros(np.shape(diffusivity)[0])
+            for i in range(np.shape(diffusivity)[0]):
+                index[i] = np.max(np.where(diffusivity[i, 1:] > 10 ** (-20))) + 1
+                ice_age_cod[i] = ice_age_model[i, int(index[i])]
+                d15n_cod[i] = d15n_model[i, int(index[i])]
+                close_off_depth[i] = depth_model[i, int(index[i])]
+
+        for i in range(depth_model.shape[0]):
+            index = int(np.where(depth_model[i, 1:] == close_off_depth[i])[0])
+            gas_age_cod[i] = gas_age_model[i, index]
+            ice_age_cod[i] = ice_age_model[i, index]
+            d15n_cod[i] = d15n_model[i, index]
+
+        gas_age_cod = gas_age_cod[1:]
+        ice_age_cod = ice_age_cod[1:]
+        modeltime = depth_model[1:, 0]
+
+        gas_age_cod_smooth = smooth_data(cop, gas_age_cod, modeltime, modeltime)[0]
+        ice_age_cod_smooth = smooth_data(cop, ice_age_cod, modeltime, modeltime)[0]
+
+        ice_age = modeltime - ice_age_cod_smooth  # signs seem to be the wrong way round because of negative modeltime
+        delta_age = ice_age_cod_smooth - gas_age_cod_smooth
+        gas_age = ice_age + delta_age
+        d15n_cod = d15n_cod[1:] * 1000
+
+    else:
+        d15n_cod = d15N_tot(file=file, mode=mode)
+        close_off_depth = get_cod(file=file, mode=mode)
         ice_age_cod = np.ones_like(close_off_depth)
+        for i in range(depth_model.shape[0]):
+            index = int(np.where(depth_model[i, 1:] == close_off_depth[i])[0])
+            ice_age_cod[i] = ice_age_model[i, index]
 
-    if mode == 'lid':
-        # Get data at LID
-        close_off_depth = file["BCO"][:, 6]
-        depth_model = file['depth']
-        d15n_model = file["d15N2"][:] - 1.
-        gas_age_model = file["gas_age"][:]
-        ice_age_model = file["age"][:]
-        d15n_cod = np.ones_like(close_off_depth)
-        gas_age_cod = np.ones_like(close_off_depth)
-        ice_age_cod = np.ones_like(close_off_depth)
-
-    if mode == '0_diff':
-        # Get data at depth where D_eff = 0
-        diffusivity = file['diffusivity'][:]
-        depth_model = file['depth']
-        d15n_model = file["d15N2"][:] - 1.
-        gas_age_model = file["gas_age"][:]
-        ice_age_model = file["age"][:]
-        index = np.zeros(np.shape(diffusivity)[0])
-        ice_age_cod = np.zeros(np.shape(diffusivity)[0])
-        gas_age_cod = np.zeros(np.shape(diffusivity)[0])
-        d15n_cod = np.zeros(np.shape(diffusivity)[0])
-        close_off_depth = np.zeros(np.shape(diffusivity)[0])
-        for i in range(np.shape(diffusivity)[0]):
-            index[i] = np.max(np.where(diffusivity[i, 1:] > 10 ** (-20))) + 1
-            ice_age_cod[i] = ice_age_model[i, int(index[i])]
-            d15n_cod[i] = d15n_model[i, int(index[i])]
-            close_off_depth[i] = depth_model[i, int(index[i])]
-
-    for i in range(depth_model.shape[0]):
-        index = int(np.where(depth_model[i, 1:] == close_off_depth[i])[0])
-        gas_age_cod[i] = gas_age_model[i, index]
-        ice_age_cod[i] = ice_age_model[i, index]
-        d15n_cod[i] = d15n_model[i, index]
-
-    gas_age_cod = gas_age_cod[1:]
-    ice_age_cod = ice_age_cod[1:]
-    modeltime = depth_model[1:, 0]
-
-    gas_age_cod_smooth = smooth_data(cop, gas_age_cod, modeltime, modeltime)[0]
-    ice_age_cod_smooth = smooth_data(cop, ice_age_cod, modeltime, modeltime)[0]
-
-    ice_age = modeltime - ice_age_cod_smooth  # signs seem to be the wrong way round because of negative modeltime
-    delta_age = ice_age_cod_smooth - gas_age_cod_smooth
-    gas_age = ice_age + delta_age
-    d15n_cod = d15n_cod[1:] * 1000
+        ice_age_cod = ice_age_cod[1:]
+        modeltime = depth_model[1:, 0]
+        ice_age_cod_smooth = smooth_data(cop, ice_age_cod, modeltime, modeltime)[0]
+        ice_age = modeltime - ice_age_cod_smooth
+        gas_age = np.zeros_like(ice_age)
+        delta_age = np.zeros_like(ice_age)
+        d15n_cod = d15n_cod[1:]
 
     return d15n_cod, ice_age, gas_age, delta_age
+
 
 '''
 def get_d15N_data(path_data, ice_age_d15N_model):
@@ -195,8 +210,9 @@ if __name__ == '__main__':
     # plt.plot(gas_age, d15N)
     # plt.show()
 
-    d15n_model, ice_age_model, gas_age_model, delta_age = get_d15N_model(model_path, 'cod', 1/200.)
+    d15n_model, ice_age_model, gas_age_model, delta_age = get_d15N_model(model_path, 'cod', firnair=False, cop=1/200.)
     print(ice_age_model)
+    print(d15n_model)
 
     ice_age_int, gas_age_int, d15N_int, d15N_err_int = get_d15N_data_interval(data_path2, ice_age_model)
     d15N_model_interp, gasage_interp = interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, gas_age_model, ice_age_int)
@@ -207,10 +223,10 @@ if __name__ == '__main__':
     plt.legend()
     plt.show()
 
-    plt.plot(gas_age_int, d15N_int, 'ro', markersize=1, label='data')
-    plt.plot(gasage_interp, d15N_model_interp, 'bv', markersize=1, label='model interpolated')
-    plt.legend()
-    plt.show()
+    # plt.plot(gas_age_int, d15N_int, 'ro', markersize=1, label='data')
+    # plt.plot(gasage_interp, d15N_model_interp, 'bv', markersize=1, label='model interpolated')
+    # plt.legend()
+    # plt.show()
 
 
     test = False
@@ -219,7 +235,7 @@ if __name__ == '__main__':
         model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_65_30kyr_300m_5yr.hdf5'
         data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 
-        d15N2_model, iceAge_model, gasAge_model, deltaAge = get_d15N_model(model_path, mode='cod', cop=1/200.)
+        d15N2_model, iceAge_model, gasAge_model, deltaAge = get_d15N_model(model_path, mode='cod', firnair=False, cop=1/200.)
         d15N2_data, d15N2_err = get_d15N_data(data_path, iceAge_model, cop=1/200.)
 
         plt.plot(iceAge_model, d15N2_model, label='model')
