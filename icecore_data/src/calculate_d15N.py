@@ -76,7 +76,7 @@ def d15N_tot(file, mode):
 
 if __name__ == '__main__':
     model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
-    mode = 'cod'
+    mode = 'lid'
     f = h5py.File(model_path, 'r')
     T_S = get_T_surface(f)
     T_c = get_T_cod(f, mode)
