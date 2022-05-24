@@ -13,7 +13,7 @@ plt.rc('font', family='serif')
 data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
-results_path = 'resultsFolder/2022-05-23_01_resultsInversion_fmin.h5'
+results_path = 'resultsFolder/2022-05-19_01_resultsInversion_fmin.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -101,19 +101,20 @@ def fun(theta):
     d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode, cop=1 / 200.)
     ice_age_data_interv, gas_age_data_interv, d15N2_data_interv, d15N2_data_err_interv = \
         get_d15N_data_interval(data_path2, iceAge_model_)
-    d15N2_model_interp, gasAge_model_interp = interpolate_d15Nmodel_2_d15Ndata(d15N2_model_, iceAge_model_,
-                                                                               gasAge_model_, ice_age_data_interv)
 
-    cost_func = 1 / (np.shape(d15N2_model_interp[-minimizer_interval:])[0] - 1) * np.sum((d15N2_model_interp
-                                                                                          [-minimizer_interval:] -
-                                                                                          d15N2_data_interv[
-                                                                                          -minimizer_interval:]) ** 2)
+    if d15n_age == 'ice_age':
+        d15N2_data_ = get_d15N_data_interval(data_path2, iceAge_model_)[2]
+    else:
+        d15N2_data_ = get_d15N_data_interval(data_path2, iceAge_model_)[2]
+    cost_func = 1 / (np.shape(d15N2_model_[-minimizer_interval:])[0] - 1) * np.sum((d15N2_model_[-minimizer_interval:] -
+                                                                                   d15N2_data_[
+                                                                                       -minimizer_interval:]) ** 2)
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
-    opt_dict['d15N@cod'][count, :] = d15N2_model_interp[:]
-    opt_dict['ice_age'][count, :] = ice_age_data_interv[:]
-    opt_dict['gas_age'][count, :] = gasAge_model_interp[:]
+    opt_dict['d15N@cod'][count, :] = d15N2_model_[:]
+    opt_dict['ice_age'][count, :] = iceAge_model_[:]
+    opt_dict['gas_age'][count, :] = gasAge_model_[:]
     opt_dict['cost_function'][count] = cost_func
     count += 1
     opt_dict['count'][count] = count
