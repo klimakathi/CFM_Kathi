@@ -4,8 +4,7 @@ from read_temp_acc import *
 import h5py
 
 data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-model_path = '../../../finalResults/inversion/fminsearch_NelderMead/2022-05-19_01_resultsInversion_fmin.h5'
-
+model_path = '../../../finalResults/inversion/fminsearch_NelderMead/2022-05-24_01_resultsInversion_fmin_noDiffusion.h5'
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -22,7 +21,7 @@ cop_ = 1 / 200.  # frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
 cod_mode = 'cod'
 
-d15n_age = 'gas_age'  # 'gas_age'
+d15n_age = 'ice_age'  # 'gas_age'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Read d18O data from NGRIP
@@ -31,8 +30,7 @@ d15n_age = 'gas_age'  # 'gas_age'
 depth_full, d18O_full, ice_age_full = read_data_d18O(data_path)
 depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(depth_full, d18O_full,
                                                                                ice_age_full,
-                                                                               start_year_, end_year_,
-                                                                               cop_)
+                                                                               start_year_, end_year_)
 d18O_interval_perm = d18O_interval * 1000
 d18o_smooth = smooth_data(1 / 200., d18O_interval_perm, ice_age_interval, ice_age_interval)[0]
 
@@ -52,7 +50,10 @@ a = f['a'][:]
 b = f['b'][:]
 cost = f['cost_function'][:]
 d15n = f['d15N@cod'][:]
+d15n_data = f['d15N_data'][:]
+d15n_data_err = f['d15N_data_err'][:]
 ice_age = f['ice_age'][:]
+print(np.shape(ice_age[-1, :]))
 gas_age = f['gas_age'][:]
 
 # temperature ----------------------------------------------------------------------------------------------------------
@@ -61,14 +62,6 @@ t1 = 1./a[-1] * d18o_smooth + b[-1]
 
 temp, temp_err = read_temp(data_path)
 temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_, end_year_)[0]
-
-
-# d15N2 ----------------------------------------------------------------------------------------------------------------
-if d15n_age == 'ice_age':
-    d15n_data, d15n_data_err = get_d15N_data(data_path, ice_age[-1, :])
-else:
-    d15n_data, d15n_data_err = get_d15N_data_gasage(data_path, gas_age[-1, :])
-
 
 # cost function --------------------------------------------------------------------------------------------------------
 cost_list = []
@@ -102,18 +95,20 @@ axs[0].set_ylabel('Temperature [°C]')
 axs[0].legend()
 
 if d15n_age =='ice_age':
-    axs[1].plot(ice_age[-1, :], d15n_data, 'k', label='Kindler2014')
-    axs[1].plot(ice_age[-1, :], d15n_data + d15n_data_err, 'k', linewidth=0.1, alpha=0.5)
-    axs[1].plot(ice_age[-1, :], d15n_data - d15n_data_err, 'k', linewidth=0.1, alpha=0.5)
-    axs[1].fill_between(ice_age[-1, :], d15n_data - d15n_data_err, d15n_data + d15n_data_err, alpha=0.2, facecolor='k')
+    axs[1].plot(ice_age[-1, :], d15n_data[-1, :], 'k', label='Kindler2014')
+    axs[1].plot(ice_age[-1, :], d15n_data[-1, :], + d15n_data_err[-1, :], 'k', linewidth=0.1, alpha=0.5)
+    axs[1].plot(ice_age[-1, :], d15n_data[-1, :], - d15n_data_err[-1, :], 'k', linewidth=0.1, alpha=0.5)
+    axs[1].fill_between(ice_age[-1, :], d15n_data[-1, :] - d15n_data_err[-1, :],
+                        d15n_data[-1, :] + d15n_data_err[-1, :], alpha=0.2, facecolor='k')
     axs[1].plot(ice_age[0, :], d15n[0, :], label='first guess')
     axs[1].plot(ice_age[-1, :], d15n[-1, :], label='Best fit')
     axs[1].set_xlabel('GICC05modelext ice age [yr]')
 else:
-    axs[1].plot(gas_age[-1, :], d15n_data, 'k', label='Kindler2014')
-    axs[1].plot(gas_age[-1, :], d15n_data + d15n_data_err, 'k', linewidth=0.1, alpha=0.5)
-    axs[1].plot(gas_age[-1, :], d15n_data - d15n_data_err, 'k', linewidth=0.1, alpha=0.5)
-    axs[1].fill_between(gas_age[-1, :], d15n_data - d15n_data_err, d15n_data + d15n_data_err, alpha=0.2, facecolor='k')
+    axs[1].plot(gas_age[-1, :], d15n_data[-1, :], 'k', label='Kindler2014')
+    axs[1].plot(gas_age[-1, :], d15n_data[-1, :] + d15n_data_err[-1, :], 'k', linewidth=0.1, alpha=0.5)
+    axs[1].plot(gas_age[-1, :], d15n_data[-1, :] - d15n_data_err[-1, :], 'k', linewidth=0.1, alpha=0.5)
+    axs[1].fill_between(gas_age[-1, :], d15n_data[-1, :] - d15n_data_err[-1, :],
+                        d15n_data[-1, :] + d15n_data_err[-1, :], alpha=0.2, facecolor='k')
     axs[1].plot(gas_age[0, :], d15n[0, :], label='first guess')
     axs[1].plot(gas_age[-1, :], d15n[-1, :], label='Best fit')
     axs[1].set_xlabel('GICC05modelext gas age [yr]')
