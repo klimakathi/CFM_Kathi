@@ -21,6 +21,7 @@ from writer import write_spin_hdf5
 from physics import *
 from constants import *
 from isotopeDiffusion import isotopeDiffusion
+from firn_air import FirnAir
 import numpy as np
 import scipy.interpolate as interpolate
 import csv
@@ -349,6 +350,51 @@ class FirnDensitySpin:
             for isotope in self.c['iso']:
                 self.Isotopes[isotope] = isotopeDiffusion(self.spin, self.c, isotope, self.stp, self.z)
 
+
+        # TODO: Insert Surface gas isotope values for each time step ---------------------------------------------------
+        if self.c['FirnAir']:
+            print('Firn air initialized')
+            with open(self.c['AirConfigName'], "r") as f:
+                jsonString = f.read()
+                self.cg = json.loads(jsonString)
+            self.FA = {}                                    # dictionary holding each instance of the firn-air class
+            self.gas_out = {}                               # outputs for each gas in the simulation
+            self.Gz = {}                                    # Depth profile of each gas
+            self.diffusivity = np.ones_like(self.rho)
+            self.diffusivity_out = {}
+            self.gas_age = np.zeros_like(self.rho)
+            self.gas_age_out = {}
+            self.w_air = np.ones_like(self.rho)
+            self.w_air_out = {}
+            self.w_firn = np.ones_like(self.rho)
+            self.w_firn = {}
+
+            for gas in self.cg['gaschoice']:
+                if (gas == 'd15N2' or gas == 'd40Ar'):
+                    input_year_gas = input_year_temp
+                    input_gas = np.ones_like(input_year_temp)
+                else:
+                    input_gas, input_year_gas, input_gas_full, input_year_gas_full = read_input(
+                        os.path.join(self.c['InputFileFolder'], '%s.csv' % gas), updatedStartDate)
+                Gsf = interpolate.interp1d(input_year_gas, input_gas, 'linear', fill_value='extrapolate')
+                Gs = Gsf(self.modeltime)
+
+                self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas, self.bdot)
+                self.Gz[gas] = np.ones_like(self.rho)
+
+            if self.cg['runtype'] == 'steady':
+                print('Steady-state firn air works only with Herron and Langway physics, instant accumulation mode')
+                print('This is automatically changed for you')
+                self.bdot = self.cg['steady_bdot'] * np.ones_like(self.bdot)
+                self.bdotSec = self.bdot / S_PER_YEAR / self.c[
+                    'stpsPerYear']  # accumulation for each time step (meters i.e. per second)
+                self.iceout = np.mean(self.bdot)  # units m I.E. per year.
+                self.w_firn = np.mean(self.bdot) * RHO_I / self.rho
+                self.c['physRho'] = 'HLdynamic'
+                self.c['bdot_type'] = 'instant'
+        else:
+            self.cg = None
+
         # Surface Density ----------------------------------------------------------------------------------------------
         # could configure this so that user specifies vector of some noise
         # Surface density at each time step if using a constant surface density, or the mean value
@@ -422,8 +468,6 @@ class FirnDensitySpin:
         # --------------------------------------------------------------------------------------------------------------
         # START TIME-STEPPING LOOP
         # --------------------------------------------------------------------------------------------------------------
-        # TODO: insert a txt file to write things into it...
-        self.f_txt = open("dTdz_txt.txt", "a")
 
         for iii in range(self.stp):  # remember: self.stp is the number of total time steps
             # create dictionary of the parameters that get passed to physics
@@ -454,7 +498,7 @@ class FirnDensitySpin:
                 'dz': self.dz,
                 'LWC': self.LWC,
                 'MELT': self.MELT,
-                'FirnAir': False,
+                'FirnAir': self.c['FirnAir'],
                 'bdot_av': self.bdot_av  # The long-term mean accumulation rate, related to first accumulation (csv)
             }
 
@@ -533,6 +577,23 @@ class FirnDensitySpin:
             if self.c['strain']:  # consider additional change in box height due to longitudinal strain rate
                 self.dz = ((-self.du_dx) * self.dt[iii] + 1) * self.dz
                 self.mass = self.mass * ((-self.du_dx) * self.dt[iii] + 1)
+
+            # TODO: update firn air grid if user specifies -------------------------------------------------------------
+            if self.c['FirnAir']:
+                AirParams = {
+                    'Tz': self.Tz,
+                    'rho': self.rho,
+                    'dt': self.dt[iii],
+                    'z': self.z,
+                    'rhos0': self.rhos0[iii],
+                    'dz_old': self.dz_old,
+                    'dz': self.dz,
+                    'rho_old': self.rho_old,
+                    'w_firn': self.w_firn
+                }
+                for gas in self.cg['gaschoice']:
+                    self.Gz[gas], self.diffusivity, self.w_air, self.gas_age = self.FA[gas].firn_air_diffusion(
+                        AirParams, iii)
 
             # update model grid mass, stress, and mean accumulation rate -----------------------------------------------
             dzNew = self.bdotSec[iii] * RHO_I / self.rhos0[iii] * S_PER_YEAR
@@ -637,6 +698,20 @@ class FirnDensitySpin:
                             # self.iso_out[isotope] = np.interp(self.z,init_depth,initfirn['iso{}'.format(isotope)].values)
                 else:
                     self.iso_time = None
+
+                # TODO: write last time step of FIrnAir --> include this in the writer...
+                if self.c['FirnAir']:
+                    for gas in self.cg['gaschoice']:
+                        self.gas_out[gas] = np.concatenate(([self.t * iii + 1], self.Gz[gas]))
+                    self.diffusivity_out = np.concatenate(([self.t * iii + 1], self.diffusivity))
+                    self.w_air_out = np.concatenate(([self.t * iii + 1], self.w_air))
+                    self.w_firn_out = np.concatenate(([self.t * iii + 1], self.w_firn))
+
+                else:
+                    self.firnair_time = None
+
+
+
                 if self.c['MELT']:
                     self.LWC_time = np.concatenate(([self.t * iii + 1], self.LWC))  # VV
                 else:  # VV

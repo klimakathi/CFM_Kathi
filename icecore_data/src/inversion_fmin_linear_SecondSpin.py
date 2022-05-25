@@ -15,16 +15,17 @@ data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_da
 data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
 
-spin_path = 'resultsFolder/2022-05-24_01_resultsInversion_fmin_noDiffusion_SPIN.h5'
-results_path = 'resultsFolder/2022-05-24_01_resultsInversion_fmin_noDiffusion.h5'
+spin_path = 'resultsFolder/2022-05-24_02_resultsInversion_fmin_noDiffusion_SPIN.h5'
+results_path = 'resultsFolder/2022-05-24_02_resultsInversion_fmin_noDiffusion.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
 start_year_ = -44000            # start input year
 end_year_ = -38500              # end input year
-year_Spin = 1000                # years of Second Spin --> this is to find a good start temperature for the optimization
-end_year_Spin = start_year_ + year_Spin
+year_Spin = 5000                # years of Second Spin --> this is to find a good start temperature for the optimization
+end_year_Spin = start_year_
+start_year_Spin = end_year_Spin - year_Spin
 
 firnair_module = True           # this is to specify whether we use the firnair module in the CFM
 
@@ -42,7 +43,7 @@ N = 1000                        # number of max iterations
 
 d15n_age = 'ice_age'            # 'gas_age', 'ice_age'  NOTE: Until now 'gas_age' only works if firnair_module=True !!!
 frac_minimizer_interval = 0.5   # fraction of ice_age/d15N interval where optimization is performed
-no_points_minimize_Spin = 5     # first points of ice_age/d15N interval where spin optimization is performed
+frac_minimizer_interval_Spin = 0.5     # first points of ice_age/d15N interval where spin optimization is performed
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Read d18O data from NGRIP
@@ -70,6 +71,8 @@ dt_Spin = S_PER_YEAR / stpsPerYear  # seconds per time step
 stp = int(years_Spin * S_PER_YEAR / dt_Spin)  # -1       # total number of time steps, as integer
 modeltime_Spin = np.linspace(start_year_, end_year_Spin, stp + 1)[:-1]
 
+minimizer_interval_Spin = int(np.shape(modeltime_Spin)[0] * frac_minimizer_interval_Spin)
+
 opt_dict_Spin = {'count_Spin': np.zeros([N, 1], dtype=int),
                  'a_Spin': np.zeros([N, 1]),
                  'b_Spin': np.zeros([N, 1]),
@@ -81,6 +84,7 @@ opt_dict_Spin = {'count_Spin': np.zeros([N, 1], dtype=int),
                  'ice_age_Spin': np.zeros([N, np.shape(modeltime_Spin)[0]]),
                  'gas_age_Spin': np.zeros([N, np.shape(modeltime_Spin)[0]]),
                  'cost_function_Spin': np.zeros([N, 1])}
+
 
 # For Main run ---------------------------------------------------------------------------------------------------------
 depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(depth_full, d18O_full,
@@ -139,9 +143,10 @@ def fun_Spin(theta):
     d15N2_model_interp, gasAge_model_interp = interpolate_d15Nmodel_2_d15Ndata(d15N2_model_, iceAge_model_,
                                                                                gasAge_model_, ice_age_data_interv)
 
-    cost_func = 1 / (np.shape(d15N2_model_interp[:no_points_minimize_Spin])[0] - 1) * \
-                np.sum((d15N2_model_interp[:no_points_minimize_Spin] -
-                        d15N2_data_interv[:no_points_minimize_Spin]) ** 2)
+    cost_func = 1 / (np.shape(d15N2_model_interp[-minimizer_interval_Spin:])[0] - 1) * \
+                np.sum((d15N2_model_interp[-minimizer_interval_Spin:] -
+                        d15N2_data_interv[-minimizer_interval_Spin:]) ** 2)
+
 
     opt_dict_Spin['a_Spin'][count] = a
     opt_dict_Spin['b_Spin'][count] = b
@@ -169,9 +174,9 @@ def fun(theta):
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
     os.chdir('../../CFM_main/')
     if count == 0:
-        os.system('python3 main.py FirnAir_NGRIP_noDiff.json -n')
+        os.system('python3 main.py FirnAir_NGRIP_SecondSpin.json -n')
     else:
-        os.system('python3 main.py FirnAir_NGRIP_noDiff.json')
+        os.system('python3 main.py FirnAir_NGRIP.json')
     os.chdir('../icecore_data/src/')
 
     d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode,
@@ -205,7 +210,7 @@ def fun(theta):
 # ----------------------------------------------------------------------------------------------------------------------
 # MINIMIZE
 # ----------------------
-
+'''
 # Spin run optimization
 res_Spin = fmin(fun_Spin, theta_0)
 entry_0 = np.where(opt_dict_Spin['count_Spin'] == 0)[0]
@@ -222,9 +227,11 @@ print('----------------------------------------------')
 print('|            INFO MINIMIZE SPIN              |')
 print('----------------------------------------------')
 print('Theta_Spin: a= %5.3f ‰/K, b = %5.3f K' % (theta_Spin[0], theta_Spin[1]))
+'''
 
 # Main run optimization
-res_Main = fmin(fun, theta_Spin)
+res_Main = fmin(fun, theta_0)
+res_Main = fmin(fun, theta_0)
 entry_0 = np.where(opt_dict['count'] == 0)[0]
 opt_dict['count'] = np.delete(opt_dict['count'], entry_0[1:])
 opt_dict['count'] = opt_dict['count'][:-1]
