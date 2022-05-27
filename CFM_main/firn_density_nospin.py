@@ -124,19 +124,11 @@ class FirnDensityNoSpin:
         print("Main run starting")
         print("physics are", self.c['physRho'])
 
-        if self.c['SecondSpin']:
-            # read in initial depth, age, density, temperature from spin-up results
-            initDepth = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'depth_spin2')
-            initAge = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'age_spin2')
-            initDensity = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'density_spin2')
-            initTemp = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'temp_spin2')
-            print('spinfile: ', np.shape(initTemp))
-        else:
-            # read in initial depth, age, density, temperature from spin-up results
-            initDepth = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'depthSpin')
-            initAge = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'ageSpin')
-            initDensity = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'densitySpin')
-            initTemp = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'tempSpin')
+        # read in initial depth, age, density, temperature from spin-up results
+        initDepth = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'depthSpin')
+        initAge = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'ageSpin')
+        initDensity = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'densitySpin')
+        initTemp = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'tempSpin')
 
         try:  # VV for reading initial lwc from the spin up file
             initLWC = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'LWCSpin')
@@ -663,84 +655,41 @@ class FirnDensityNoSpin:
         is stored in a dictionary
         '''
         if self.c['FirnAir']:
-            if self.c['SecondSpin']:
-                print('Firn air initialized using main run...')
-                with open(self.c['AirConfigName'], "r") as f:
-                    jsonString = f.read()
-                    self.cg = json.loads(jsonString)
-                self.FA = {}  # dictionary holding each instance of the firn-air class
-                # self.gas_out    = {} # outputs for each gas in the simulation
-                self.Gz = {}  # Depth profile of each gas
-                self.diffusivity = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'diffusivity_spin2')[1:]
-                self.gas_age = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'gas_age_spin2')[1:]
-                self.w_air = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'w_air_spin2')[1:]
-                self.w_firn = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'w_firn_spin2')[1:]
+            print('Firn air initialized')
+            with open(self.c['AirConfigName'], "r") as f:
+                jsonString = f.read()
+                self.cg = json.loads(jsonString)
+            self.FA = {}  # dictionary holding each instance of the firn-air class
+            # self.gas_out    = {} # outputs for each gas in the simulation
+            self.Gz = {}  # Depth profile of each gas
+            self.diffusivity = np.ones_like(self.rho)
+            self.gas_age = np.zeros_like(self.rho)
+            self.w_air = np.ones_like(self.rho)
+            self.w_firn = np.ones_like(self.rho)
 
-                for gas in self.cg['gaschoice']:
-                    if (gas == 'd15N2' or gas == 'd40Ar'):
-                        input_year_gas = input_year_temp
-                        print('input_year_gas', input_year_gas)
-                        input_gas = np.ones_like(input_year_temp)
-                        print('input_gas', input_gas)
-                    else:
-                        input_gas, input_year_gas, input_gas_full, input_year_gas_full = read_input(
-                            os.path.join(self.c['InputFileFolder'], '%s.csv' % gas), updatedStartDate)
-                    Gsf = interpolate.interp1d(input_year_gas, input_gas, 'linear', fill_value='extrapolate')
-                    Gs = Gsf(self.modeltime)
+            for gas in self.cg['gaschoice']:
+                if (gas == 'd15N2' or gas == 'd40Ar'):
+                    input_year_gas = input_year_temp
+                    input_gas = np.ones_like(input_year_temp)
+                else:
+                    input_gas, input_year_gas, input_gas_full, input_year_gas_full = read_input(
+                        os.path.join(self.c['InputFileFolder'], '%s.csv' % gas), updatedStartDate)
+                Gsf = interpolate.interp1d(input_year_gas, input_gas, 'linear', fill_value='extrapolate')
+                Gs = Gsf(self.modeltime)
 
-                    self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas, self.bdot)
-                    self.Gz[gas] = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'd15n2_spin2')[1:]
+                self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas, self.bdot)
+                self.Gz[gas] = np.ones_like(self.rho)
 
-
-                if self.cg['runtype'] == 'steady':
-                    print('Steady-state firn air works only with Herron and Langway physics, instant accumulation mode')
-                    print('This is automatically changed for you')
-                    self.bdot = self.cg['steady_bdot'] * np.ones_like(self.bdot)
-                    self.bdotSec = self.bdot / S_PER_YEAR / self.c[
-                        'stpsPerYear']  # accumulation for each time step (meters i.e. per second)
-                    self.iceout = np.mean(self.bdot)  # units m I.E. per year.
-                    self.w_firn = np.mean(self.bdot) * RHO_I / self.rho
-                    self.c['physRho'] = 'HLdynamic'
-                    self.c['bdot_type'] = 'instant'
-
-            else:
-                print('Firn air initialized')
-                with open(self.c['AirConfigName'], "r") as f:
-                    jsonString = f.read()
-                    self.cg = json.loads(jsonString)
-                self.FA = {}  # dictionary holding each instance of the firn-air class
-                # self.gas_out    = {} # outputs for each gas in the simulation
-                self.Gz = {}  # Depth profile of each gas
-                self.diffusivity = np.ones_like(self.rho)
-                self.gas_age = np.zeros_like(self.rho)
-                self.w_air = np.ones_like(self.rho)
-                self.w_firn = np.ones_like(self.rho)
-                print('rho: ', np.shape(self.rho))
-
-                for gas in self.cg['gaschoice']:
-                    if (gas == 'd15N2' or gas == 'd40Ar'):
-                        input_year_gas = input_year_temp
-                        input_gas = np.ones_like(input_year_temp)
-                    else:
-                        input_gas, input_year_gas, input_gas_full, input_year_gas_full = read_input(
-                            os.path.join(self.c['InputFileFolder'], '%s.csv' % gas), updatedStartDate)
-                    Gsf = interpolate.interp1d(input_year_gas, input_gas, 'linear', fill_value='extrapolate')
-                    Gs = Gsf(self.modeltime)
-
-                    self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas,
-                                           self.bdot)
-                    self.Gz[gas] = np.ones_like(self.rho)
-
-                if self.cg['runtype'] == 'steady':
-                    print('Steady-state firn air works only with Herron and Langway physics, instant accumulation mode')
-                    print('This is automatically changed for you')
-                    self.bdot = self.cg['steady_bdot'] * np.ones_like(self.bdot)
-                    self.bdotSec = self.bdot / S_PER_YEAR / self.c[
-                        'stpsPerYear']  # accumulation for each time step (meters i.e. per second)
-                    self.iceout = np.mean(self.bdot)  # units m I.E. per year.
-                    self.w_firn = np.mean(self.bdot) * RHO_I / self.rho
-                    self.c['physRho'] = 'HLdynamic'
-                    self.c['bdot_type'] = 'instant'
+            if self.cg['runtype'] == 'steady':
+                print('Steady-state firn air works only with Herron and Langway physics, instant accumulation mode')
+                print('This is automatically changed for you')
+                self.bdot = self.cg['steady_bdot'] * np.ones_like(self.bdot)
+                self.bdotSec = self.bdot / S_PER_YEAR / self.c[
+                    'stpsPerYear']  # accumulation for each time step (meters i.e. per second)
+                self.iceout = np.mean(self.bdot)  # units m I.E. per year.
+                self.w_firn = np.mean(self.bdot) * RHO_I / self.rho
+                self.c['physRho'] = 'HLdynamic'
+                self.c['bdot_type'] = 'instant'
         else:
             self.cg = None
         ######################            
