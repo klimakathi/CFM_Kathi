@@ -538,7 +538,6 @@ class FirnDensityNoSpin:
         if self.c['TWriteInt'] != 1:
             print('Time writing interval is not 1; dH output will not be accurate.')
         TWlen = len(self.TWrite)  # - 1
-        print('TWlen', TWlen)
         self.WTracker = 1
 
         ### set up initial mass, stress, and mean accumulation rate
