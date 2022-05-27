@@ -7,7 +7,7 @@ def find_index_from_year(time, year):
     return year_ind
 
 
-def read_data_at_secondSpinIndex(path_model, t_second_spin):
+def read_data_at_secondSpin(path_model, t_second_spin):
     f = h5py.File(path_model, 'r')
     time = f['depth'][1:, 0]
     t_second_spin_ind = find_index_from_year(time, t_second_spin)
@@ -22,6 +22,8 @@ def read_data_at_secondSpinIndex(path_model, t_second_spin):
         'w_firnSpin2': f['w_firn'][t_second_spin_ind, :],
         'd15N2Spin2': f['d15N2'][t_second_spin_ind, :]
     }
+    print(dict_SecondSpin['d15N2Spin2'])
+    print(f['d15N2'][:])
     f.close()
     return dict_SecondSpin
 
@@ -39,7 +41,8 @@ if __name__ == '__main__':
     model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
     spin_path = '../../CFM_main/resultsFolder/CFMspin_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
 
-    dict_spin = read_data_at_secondSpinIndex(model_path, 524)
+    dict_spin = read_data_at_secondSpin(model_path, -39000)
+    print(dict_spin)
     write_data_2_new_spinFile(spin_path, dict_spin)
 
 
