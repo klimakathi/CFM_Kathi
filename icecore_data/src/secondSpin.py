@@ -2,23 +2,25 @@ import h5py
 import numpy as np
 
 
-def find_second_spin_index(ice_age_data, second_spin_year):  # second_spin_year is the end year of 2nd spin
-    t_second_spin_ind = np.min(np.where(ice_age_data >= second_spin_year))
-    return t_second_spin_ind
+def find_index_from_year(time, year):
+    year_ind = np.min(np.where(time >= year))
+    return year_ind
 
 
-def read_data_at_secondSpinIndex(path_model, t_second_spin_ind):
+def read_data_at_secondSpinIndex(path_model, t_second_spin):
     f = h5py.File(path_model, 'r')
+    time = f['depth'][1:, 0]
+    t_second_spin_ind = find_index_from_year(time, t_second_spin)
     dict_SecondSpin = {
-        'age_spin2': f['age'][t_second_spin_ind, :],
-        'density_spin2': f['density'][t_second_spin_ind, :],
-        'depth_spin2': f['depth'][t_second_spin_ind, :],
-        'temp_spin2': f['temperature'][t_second_spin_ind, :],
-        'diffusivity_spin2': f['diffusivity'][t_second_spin_ind, :],
-        'gas_age_spin2': f['gas_age'][t_second_spin_ind, :],
-        'w_air_spin2': f['w_air'][t_second_spin_ind, :],
-        'w_firn_spin2': f['w_firn'][t_second_spin_ind, :],
-        'd15n2_spin2': f['d15N2'][t_second_spin_ind, :]
+        'ageSpin2': f['age'][t_second_spin_ind, :],
+        'densitySpin2': f['density'][t_second_spin_ind, :],
+        'depthSpin2': f['depth'][t_second_spin_ind, :],
+        'tempSpin2': f['temperature'][t_second_spin_ind, :],
+        'diffusivitySpin2': f['diffusivity'][t_second_spin_ind, :],
+        'gas_ageSpin2': f['gas_age'][t_second_spin_ind, :],
+        'w_airSpin2': f['w_air'][t_second_spin_ind, :],
+        'w_firnSpin2': f['w_firn'][t_second_spin_ind, :],
+        'd15n2Spin2': f['d15N2'][t_second_spin_ind, :]
     }
     f.close()
     return dict_SecondSpin
