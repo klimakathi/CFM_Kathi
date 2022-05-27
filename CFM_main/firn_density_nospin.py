@@ -687,7 +687,7 @@ class FirnDensityNoSpin:
 
                     self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas,
                                            self.bdot)
-                    self.Gz[gas] = np.ones_like(self.rho)
+                    self.Gz[gas] = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'd15N2Spin2')
             else:
                 print('Firn air initialized')
                 with open(self.c['AirConfigName'], "r") as f:
