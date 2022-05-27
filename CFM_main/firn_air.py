@@ -202,7 +202,8 @@ class FirnAir:
         return self.rho_co, self.por_co, self.por_tot, self.por_cl, self.por_op, self.bcoRho, self.LIDRho
 
     def firn_air_diffusion(self, AirParams, iii):
-
+        if iii == 0:
+            print(self.Gz)
         """
         Solve the diffusion equation.
         Calls solver.py
@@ -300,6 +301,8 @@ class FirnAir:
         self.Gz, w_p = transient_solve_TR(z_edges, z_P_vec, nt, self.dt, self.diffu, phi_0, nz_P, nz_fv, phi_s,
                                           self.rho, c_vol, mode, airdict)
         self.Gz = np.concatenate(([self.Gs[iii]], self.Gz[:-1]))
+        if iii == 0:
+            print(self.Gz)
 
 
         ind_LID = np.where(self.z >= self.LID)[0]
