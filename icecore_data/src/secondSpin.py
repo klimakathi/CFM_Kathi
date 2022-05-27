@@ -20,7 +20,7 @@ def read_data_at_secondSpinIndex(path_model, t_second_spin):
         'gas_ageSpin2': f['gas_age'][t_second_spin_ind, :],
         'w_airSpin2': f['w_air'][t_second_spin_ind, :],
         'w_firnSpin2': f['w_firn'][t_second_spin_ind, :],
-        'd15n2Spin2': f['d15N2'][t_second_spin_ind, :]
+        'd15N2Spin2': f['d15N2'][t_second_spin_ind, :]
     }
     f.close()
     return dict_SecondSpin
