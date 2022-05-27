@@ -17,7 +17,7 @@
 "MELT": false,
 "ReehCorrectedT": false,
 "FirnAir": true,
-"SecondSpin": true,
+"SecondSpin": false,
 "AirConfigName": "AirConfig.json",
 "TWriteInt": 1,
 "TWriteStart": -45000,
