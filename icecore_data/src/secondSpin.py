@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def find_index_from_year(time, year):
@@ -22,8 +23,11 @@ def read_data_at_secondSpin(path_model, t_second_spin):
         'w_firnSpin2': f['w_firn'][t_second_spin_ind, :],
         'd15N2Spin2': f['d15N2'][t_second_spin_ind, :]
     }
-    print(dict_SecondSpin['d15N2Spin2'])
-    print(f['d15N2'][:])
+    d = f['depth'][:]
+    d15n2 = f['d15N2'][:]
+    print(np.shape(d15n2))
+    plt.plot(d[t_second_spin_ind, 1:], d15n2[t_second_spin_ind, 1:])
+    plt.show()
     f.close()
     return dict_SecondSpin
 
