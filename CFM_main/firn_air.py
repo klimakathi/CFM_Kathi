@@ -15,18 +15,21 @@ import scipy.interpolate as interpolate
 from constants import *
 import os
 import time as t
+from reader import read_init
 
 
 class FirnAir:
-    def __init__(self, air_config, Gs, z, modeltime, Tz, rho, dz, gaschoice, bdot):
+    def __init__(self, air_config, Gs, z, modeltime, Tz, rho, dz, gaschoice, bdot, secondSpin, Gz0):
         """
         Initialize Firn Air class
         """
 
         self.cg = air_config
         self.Gs = Gs
-
-        self.Gz = self.Gs[0] * np.ones_like(z)
+        if secondSpin:
+            self.Gz = Gz0
+        else:
+            self.Gz = self.Gs[0] * np.ones_like(z)
         self.Tz = Tz
         self.z = z
         self.rho = rho
@@ -203,7 +206,7 @@ class FirnAir:
 
     def firn_air_diffusion(self, AirParams, iii):
         if iii == 0:
-            print(self.Gz)
+            print('why...', self.Gz)
         """
         Solve the diffusion equation.
         Calls solver.py

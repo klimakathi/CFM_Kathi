@@ -684,10 +684,12 @@ class FirnDensityNoSpin:
                             os.path.join(self.c['InputFileFolder'], '%s.csv' % gas), updatedStartDate)
                     Gsf = interpolate.interp1d(input_year_gas, input_gas, 'linear', fill_value='extrapolate')
                     Gs = Gsf(self.modeltime)
+                    Gz0 = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'd15N2Spin2')
 
                     self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas,
-                                           self.bdot)
+                                           self.bdot, secondSpin=True, Gz0=Gz0)
                     self.Gz[gas] = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'd15N2Spin2')
+                    print(self.Gz[gas])
             else:
                 print('Firn air initialized')
                 with open(self.c['AirConfigName'], "r") as f:
@@ -710,8 +712,10 @@ class FirnDensityNoSpin:
                             os.path.join(self.c['InputFileFolder'], '%s.csv' % gas), updatedStartDate)
                     Gsf = interpolate.interp1d(input_year_gas, input_gas, 'linear', fill_value='extrapolate')
                     Gs = Gsf(self.modeltime)
+                    Gz0 = np.ones_like(self.rho)
 
-                    self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas, self.bdot)
+                    self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas,
+                                           self.bdot, secondSpin=False, Gz0=Gz0)
                     self.Gz[gas] = np.ones_like(self.rho)
 
             if self.cg['runtype'] == 'steady':
@@ -1167,8 +1171,16 @@ class FirnDensityNoSpin:
                     'w_firn': self.w_firn
                 }
                 for gas in self.cg['gaschoice']:
+                    if iii == 0:
+                        print('before first diffusion, 0: ', self.Gz[gas])
                     self.Gz[gas], self.diffusivity, self.w_air, self.gas_age = self.FA[gas].firn_air_diffusion(
                         AirParams, iii)
+                    if iii == 0:
+                        print('0: ', self.Gz[gas])
+                    if iii == 1:
+                        print('1: ', self.Gz[gas])
+                    if iii == 2:
+                        print('2: ', self.Gz[gas])
             ####################
 
             ### Isotopes #######
