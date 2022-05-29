@@ -86,16 +86,11 @@ if __name__ == '__main__':
     os.chdir('../../CFM_main/')
 
     with open('FirnAir_NGRIP_Spin2.json', 'r+') as json_file:
-        print('here is still everything fine')
         cfm_params = json.load(json_file)
         cfm_params['TWriteStart'] = start_year_
         # cfm_params['SecondSpin'] = True
-        print('and here too...')
         cfm_params['resultsFileName'] = resultsFileName
-        print('seek')
         json_file.seek(0)
-        print('dump')
         json.dump(cfm_params, json_file, indent=4)
-        print('whaaat?!')
 
     os.system('python3 main.py FirnAir_NGRIP_Spin2.json')
