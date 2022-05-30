@@ -35,10 +35,10 @@
     "MELT": false,
     "ReehCorrectedT": false,
     "FirnAir": true,
-    "SecondSpin": true,
+    "SecondSpin": false,
     "AirConfigName": "AirConfig.json",
     "TWriteInt": 1,
-    "TWriteStart": -44000,
+    "TWriteStart": -49000.0,
     "int_type": "linear",
     "int_type_options": [
         "nearest",
@@ -138,8 +138,8 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-29_01.hdf5",
-    "spinFileName": "CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-29_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_compare_2022-05-29_01.hdf5",
+    "spinFileName": "CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_compare_2022-05-29_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,
     "multnodestocombine": 12,

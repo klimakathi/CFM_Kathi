@@ -138,8 +138,8 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc_SPIN2.hdf5",
-    "spinFileName": "CFMspin_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-29_01.hdf5",
+    "spinFileName": "CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-29_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,
     "multnodestocombine": 12,
