@@ -3,9 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import glob
 
+S_PER_YEAR = 31557600.0
 
 def find_index_from_year(time, year):
     year_ind = np.min(np.where(time >= year))
+    print('modeltime start_year_', time[year_ind])
     return year_ind
 
 
@@ -20,7 +22,7 @@ def read_data_at_secondSpin(path_model, path_spin, t_second_spin):
         'depthSpin': s['depthSpin'][:],
         'tempSpin': s['tempSpin'][:],
         'r2Spin': s['r2Spin'][:],
-        'ageSpin2': f['age'][t_second_spin_ind, :],
+        'ageSpin2': f['age'][t_second_spin_ind, :] * S_PER_YEAR,
         'densitySpin2': f['density'][t_second_spin_ind, :],
         'depthSpin2': f['depth'][t_second_spin_ind, :],
         'tempSpin2': f['temperature'][t_second_spin_ind, :],
@@ -31,11 +33,6 @@ def read_data_at_secondSpin(path_model, path_spin, t_second_spin):
         'd15N2Spin2': f['d15N2'][t_second_spin_ind, 1:],
         'r2Spin2': f['r2'][t_second_spin_ind, :]
     }
-    d = f['depth'][:]
-    d15n2 = f['d15N2'][:]
-    print(np.shape(d15n2))
-    plt.plot(d[t_second_spin_ind, 1:], d15n2[t_second_spin_ind, 1:])
-    plt.show()
     f.close()
     s.close()
     return dict_SecondSpin
