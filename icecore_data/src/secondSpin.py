@@ -7,7 +7,6 @@ S_PER_YEAR = 31557600.0
 
 def find_index_from_year(time, year):
     year_ind = np.min(np.where(time >= year))
-    print('modeltime start_year_', time[year_ind])
     return year_ind
 
 

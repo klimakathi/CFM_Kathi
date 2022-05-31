@@ -5,15 +5,15 @@ from read_d15N import get_d15N_model
 
 
 # Model Paths ----------------------------------------------------------------------------------------------------------
-results_path = '../../../finalResults/secondSpin/first_try_secondSpin/2022-05-30_01/'
+results_path = '../../../finalResults/secondSpin/'
 
-results_path_SPIN = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-30_01.hdf5'
-results_path_MAIN = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-30_01.hdf5'
-results_path_COMPARE = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_compare_2022-05-30_01.hdf5'
-results_path_COMPARE2 = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_compare2_2022-05-30_01.hdf5'
+results_path_SPIN = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-31_01.hdf5'
+results_path_MAIN = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5'
+results_path_COMPARE = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_compare_2022-05-31_01.hdf5'
+results_path_COMPARE2 = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_compare2_2022-05-31_01.hdf5'
 
-spin_path_SPIN = 'CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-30_01.hdf5'
-spin_path_COMPARE = 'CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_compare_2022-05-30_01.hdf5'
+spin_path_SPIN = 'CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5'
+spin_path_COMPARE = 'CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_compare_2022-05-31_01.hdf5'
 
 
 # Parameters -----------------------------------------------------------------------------------------------------------
@@ -89,10 +89,11 @@ if __name__ == '__main__':
     axs[0].set_ylabel('Temperature [°C]')
     axs[0].legend()
 
-    axs[1].plot(gas_age_spin2, d15n_spin2, label='Spin 2', color='orange')
-    axs[1].plot(gas_age_main, d15n_main, label='Main', color='green')
+
     axs[1].plot(gas_age_compare2, d15n_compare2, label='No second spin', color='red')
     axs[1].plot(gas_age_compare, d15n_compare, 'k-', label='Long run')
+    axs[1].plot(gas_age_spin2, d15n_spin2, label='Spin 2', color='orange')
+    axs[1].plot(gas_age_main, d15n_main, label='Main', color='green')
 
     axs[1].legend()
     axs[1].grid(linestyle='--', color='gray', lw='0.5')

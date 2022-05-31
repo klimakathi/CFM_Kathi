@@ -20,8 +20,8 @@ if __name__ == '__main__':
 
     data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
     results_path = '~/projects/Thesis/finalResults/secondSpin/'
-    resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-30_01.hdf5'
-    resultsFileName = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-30_01.hdf5'
+    resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-31_01.hdf5'
+    resultsFileName = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5'
 
     json_SPIN = 'FirnAir_NGRIP.json'
     json_MAIN = 'FirnAir_NGRIP_Spin2.json'
@@ -37,6 +37,7 @@ if __name__ == '__main__':
                                                                                                   start_year_Spin2,
                                                                                                   end_year_)
     print(ice_age_interval_Spin[-1])
+    print(start_year_)
     d18O_interval_perm_Spin = d18O_interval_Spin * 1000
     d18o_smooth_Spin = smooth_data(1 / 200., d18O_interval_perm_Spin, ice_age_interval_Spin, ice_age_interval_Spin)[0]
 
@@ -64,8 +65,8 @@ if __name__ == '__main__':
 
     os.system('python3 main.py FirnAir_NGRIP.json -n')
 
-    model_path = glob.glob('resultsFolder/*.hdf5')[1]
-    spin_path = glob.glob('resultsFolder/*.hdf5')[0]
+    model_path = glob.glob('resultsFolder/CFMresults*.hdf5')[0]
+    spin_path = glob.glob('resultsFolder/CFMspin*.hdf5')[0]
 
     dict_spin = read_data_at_secondSpin(model_path, spin_path, start_year_)
 
@@ -108,8 +109,8 @@ if __name__ == '__main__':
 
     os.system('python3 main.py FirnAir_NGRIP_Spin2.json')
 
-    model_path = glob.glob('resultsFolder/*.hdf5')[1]
-    spin_path = glob.glob('resultsFolder/*.hdf5')[0]
+    model_path = glob.glob('resultsFolder/CFMresults*.hdf5')[0]
+    spin_path = glob.glob('resultsFolder/CFMspin*.hdf5')[0]
     os.system('mv %s %s' % (model_path, results_path))
     os.system('mv %s %s' % (spin_path, results_path))
 
@@ -118,7 +119,7 @@ if __name__ == '__main__':
 
     if compare:
         os.chdir('../icecore_data/src/')
-        start_year_compare = -50000
+        start_year_compare = -55000
 
         depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(depth_full, d18O_full,
                                                                                        ice_age_full,
@@ -139,8 +140,8 @@ if __name__ == '__main__':
 
         os.chdir('../../CFM_main/')
         os.system('python3 main.py FirnAir_NGRIP_compare.json -n')
-        model_path = glob.glob('resultsFolder/*.hdf5')[1]
-        spin_path = glob.glob('resultsFolder/*.hdf5')[0]
+        model_path = glob.glob('resultsFolder/CFMresults*.hdf5')[0]
+        spin_path = glob.glob('resultsFolder/CFMspin*.hdf5')[0]
         os.system('mv %s %s' % (model_path, results_path))
         os.system('mv %s %s' % (spin_path, results_path))
 
@@ -165,8 +166,8 @@ if __name__ == '__main__':
 
         os.chdir('../../CFM_main/')
         os.system('python3 main.py FirnAir_NGRIP_compare2.json -n')
-        model_path = glob.glob('resultsFolder/*.hdf5')[1]
-        spin_path = glob.glob('resultsFolder/*.hdf5')[0]
+        model_path = glob.glob('resultsFolder/CFMresults*.hdf5')[0]
+        spin_path = glob.glob('resultsFolder/CFMspin*.hdf5')[0]
         os.system('mv %s %s' % (model_path, results_path))
         os.system('mv %s %s' % (spin_path, results_path))
 
