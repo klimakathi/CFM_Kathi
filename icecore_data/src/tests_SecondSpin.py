@@ -9,10 +9,10 @@ from read_temp_acc import *
 
 if __name__ == '__main__':
 
-    start_year_ = -44000  # start input year for the actual run (second main run)
-    end_year_ = -38500  # end input year for the actual run (second main run)
+    start_year_ = -46700  # start input year for the actual run (second main run)
+    end_year_ = -30000  # end input year for the actual run (second main run)
     year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
-    year_Spin2 = 5000  # Years of second Spin
+    year_Spin2 = 6000  # Years of second Spin
     start_year_Spin2 = start_year_ - year_Spin2 / 2
     end_year_Spin2 = start_year_ + year_Spin2 / 2
 
@@ -35,17 +35,18 @@ if __name__ == '__main__':
     depth_interval_Spin, d18O_interval_Spin, ice_age_interval_Spin = get_interval_data_noTimeGrid(depth_full, d18O_full,
                                                                                                   ice_age_full,
                                                                                                   start_year_Spin2,
-                                                                                                  end_year_Spin2)
+                                                                                                  end_year_)
+    print(ice_age_interval_Spin[-1])
     d18O_interval_perm_Spin = d18O_interval_Spin * 1000
     d18o_smooth_Spin = smooth_data(1 / 200., d18O_interval_perm_Spin, ice_age_interval_Spin, ice_age_interval_Spin)[0]
 
     temp, temp_err = read_temp(data_path)
-    temp_interval_Spin = get_interval_temp(temp, temp_err, ice_age_full, start_year_Spin2, end_year_Spin2)[0]
+    temp_interval_Spin = get_interval_temp(temp, temp_err, ice_age_full, start_year_Spin2, end_year_)[0]
     input_temperature_Spin = np.array([ice_age_interval_Spin, temp_interval_Spin])
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature_Spin, delimiter=",")
 
     acc = read_acc(data_path)
-    acc_interval_Spin = get_interval_acc(acc, ice_age_full, start_year_Spin2, end_year_Spin2)
+    acc_interval_Spin = get_interval_acc(acc, ice_age_full, start_year_Spin2, end_year_)
     input_acc_Spin = np.array([ice_age_interval_Spin, acc_interval_Spin])
     np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc_Spin, delimiter=",")
 
@@ -67,6 +68,7 @@ if __name__ == '__main__':
     spin_path = glob.glob('resultsFolder/*.hdf5')[0]
 
     dict_spin = read_data_at_secondSpin(model_path, spin_path, start_year_)
+
     write_data_2_new_spinFile(spin_path, dict_spin)
 
     os.system('mv %s %s' % (model_path, results_path))
@@ -80,6 +82,7 @@ if __name__ == '__main__':
                                                                                    ice_age_full,
                                                                                    start_year_,
                                                                                    end_year_)
+    print(ice_age_interval[0])
     d18O_interval_perm = d18O_interval * 1000
     d18o_smooth = smooth_data(1 / 200., d18O_interval_perm, ice_age_interval, ice_age_interval)[0]
 
@@ -115,6 +118,33 @@ if __name__ == '__main__':
 
     if compare:
         os.chdir('../icecore_data/src/')
+        start_year_compare = -50000
+
+        depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(depth_full, d18O_full,
+                                                                                       ice_age_full,
+                                                                                       start_year_compare,
+                                                                                       end_year_)
+        d18O_interval_perm = d18O_interval * 1000
+        d18o_smooth = smooth_data(1 / 200., d18O_interval_perm, ice_age_interval, ice_age_interval)[0]
+
+        temp, temp_err = read_temp(data_path)
+        temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_compare, end_year_)[0]
+        input_temperature = np.array([ice_age_interval, temp_interval])
+        np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
+
+        acc = read_acc(data_path)
+        acc_interval = get_interval_acc(acc, ice_age_full, start_year_compare, end_year_)
+        input_acc = np.array([ice_age_interval, acc_interval])
+        np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc, delimiter=",")
+
+        os.chdir('../../CFM_main/')
+        os.system('python3 main.py FirnAir_NGRIP_compare.json -n')
+        model_path = glob.glob('resultsFolder/*.hdf5')[1]
+        spin_path = glob.glob('resultsFolder/*.hdf5')[0]
+        os.system('mv %s %s' % (model_path, results_path))
+        os.system('mv %s %s' % (spin_path, results_path))
+
+        os.chdir('../icecore_data/src/')
 
         depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(depth_full, d18O_full,
                                                                                        ice_age_full,
@@ -134,7 +164,7 @@ if __name__ == '__main__':
         np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc, delimiter=",")
 
         os.chdir('../../CFM_main/')
-        os.system('python3 main.py FirnAir_NGRIP_compare.json -n')
+        os.system('python3 main.py FirnAir_NGRIP_compare2.json -n')
         model_path = glob.glob('resultsFolder/*.hdf5')[1]
         spin_path = glob.glob('resultsFolder/*.hdf5')[0]
         os.system('mv %s %s' % (model_path, results_path))
