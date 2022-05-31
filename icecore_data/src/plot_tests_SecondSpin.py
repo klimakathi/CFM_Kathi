@@ -5,7 +5,7 @@ from read_d15N import get_d15N_model
 
 
 # Model Paths ----------------------------------------------------------------------------------------------------------
-results_path = '../../../finalResults/secondSpin/'
+results_path = '../../../finalResults/secondSpin/first_try_secondSpin/2022-05-31_01/'
 
 results_path_SPIN = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-31_01.hdf5'
 results_path_MAIN = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5'
@@ -21,7 +21,7 @@ cop = 1/200.
 firnair = True
 mode = 'cod'
 
-start_year_ = -50000  # start input year for the actual run (second main run)
+start_year_ = -55000  # start input year for the actual run (second main run)
 end_year_ = -38500  # end input year for the actual run (second main run)
 year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
 year_Spin2 = 5000  # Years of second Spin
