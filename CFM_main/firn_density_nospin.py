@@ -604,7 +604,10 @@ class FirnDensityNoSpin:
 
         ### initial grain growth (if specified in config file)
         if self.c['physGrain']:
-            initr2 = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'r2Spin')
+            if self.c['SecondSpin']:
+                initr2 = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'r2Spin2')
+            else:
+                initr2 = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'r2Spin')
             self.r2 = initr2[1:]
             r20 = self.r2
             # self.dr2_dt         = np.zeros_like(self.z) # dr2_dt not currently set up    
@@ -689,7 +692,7 @@ class FirnDensityNoSpin:
                     self.FA[gas] = FirnAir(self.cg, Gs, self.z, self.modeltime, self.Tz, self.rho, self.dz, gas,
                                            self.bdot, secondSpin=True, Gz0=Gz0)
                     self.Gz[gas] = read_init(self.c['resultsFolder'], self.c['spinFileName'], 'd15N2Spin2')
-                    print(self.Gz[gas])
+                    # print(self.Gz[gas])
             else:
                 print('Firn air initialized')
                 with open(self.c['AirConfigName'], "r") as f:
