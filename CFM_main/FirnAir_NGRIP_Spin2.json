@@ -38,7 +38,7 @@
     "SecondSpin": true,
     "AirConfigName": "AirConfig.json",
     "TWriteInt": 1,
-    "TWriteStart": -44000,
+    "TWriteStart": -43700,
     "int_type": "linear",
     "int_type_options": [
         "nearest",
