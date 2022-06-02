@@ -20,7 +20,7 @@ resultsFileName_Main = 'CFMresults_NGRIP_Barnola_36-34kyr_300m_2yr_inversion-NM_
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/finalResults/inversion/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/2022-06-01_01/'
 
 json_SPIN = 'FirnAir_NGRIP.json'
 json_MAIN = 'FirnAir_NGRIP_Spin2.json'
