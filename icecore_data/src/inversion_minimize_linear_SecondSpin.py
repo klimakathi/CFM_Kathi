@@ -14,8 +14,8 @@ import glob
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_MAIN_2022-05-31_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_36-34kyr_300m_2yr_inversion-NM_SPIN2_2022-06-02_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_Barnola_36-34kyr_300m_2yr_inversion-NM_MAIN_2022-06-02_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
@@ -26,14 +26,14 @@ json_SPIN = 'FirnAir_NGRIP.json'
 json_MAIN = 'FirnAir_NGRIP_Spin2.json'
 
 # optimization parameter files
-results_minimizer_spin_path = 'resultsFolder/2022-05-31_01_resultsInversion_minimizer_SPIN.h5'
-results_minimizer_main_path = 'resultsFolder/2022-05-31_01_resultsInversion_minimizer.h5'
+results_minimizer_spin_path = 'resultsFolder/2022-06-02_01_resultsInversion_minimizer_SPIN.h5'
+results_minimizer_main_path = 'resultsFolder/2022-06-02_01_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
 start_year_ = -36000  # start input year for the actual run (main run)
-end_year_ = -30000  # end input year for the actual run (main run)
+end_year_ = -34000  # end input year for the actual run (main run)
 year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
 year_Spin2 = 8000  # Years of second Spin
 overlap = 2000
