@@ -11,8 +11,8 @@ import glob
 # ----------------------------------------------------------------------------------------------------------------------
 # Data & Model paths
 
-data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
+data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
 resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
 resultsFileName_Main = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_MAIN_2022-05-31_01.hdf5'
@@ -20,7 +20,7 @@ resultsFileName_Main = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/Thesis/finalResults/inversion/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/'
 
 json_SPIN = 'FirnAir_NGRIP.json'
 json_MAIN = 'FirnAir_NGRIP_Spin2.json'
@@ -35,9 +35,10 @@ results_minimizer_main_path = 'resultsFolder/2022-05-31_01_resultsInversion_mini
 start_year_ = -36000  # start input year for the actual run (main run)
 end_year_ = -30000  # end input year for the actual run (main run)
 year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
-year_Spin2 = 6000  # Years of second Spin
-start_year_Spin2 = start_year_ - year_Spin2 / 2
-end_year_Spin2 = start_year_ + year_Spin2 / 2
+year_Spin2 = 8000  # Years of second Spin
+overlap = 2000
+start_year_Spin2 = start_year_ - (year_Spin2 - overlap)
+end_year_Spin2 = start_year_ + overlap
 
 firnair_module = True  # this is to specify whether we use the firnair module in the CFM
 
@@ -161,9 +162,10 @@ def fun_Spin(theta):
     d15N2_model_interp, gasAge_model_interp = interpolate_d15Nmodel_2_d15Ndata(d15N2_model_, iceAge_model_,
                                                                                gasAge_model_, ice_age_data_interv)
 
-    cost_func = 1 / (np.shape(d15N2_model_interp[:no_points_minimize_Spin])[0] - 1) * \
-                np.sum((d15N2_model_interp[:no_points_minimize_Spin] -
-                        d15N2_data_interv[:no_points_minimize_Spin]) ** 2)
+    shape_optimize = int(np.shape(d15N2_model_interp)[0]/2)
+    cost_func = 1 / (np.shape(d15N2_model_interp[-shape_optimize:])[0] - 1) * \
+                np.sum((d15N2_model_interp[-shape_optimize:] -
+                        d15N2_data_interv[-shape_optimize:]) ** 2)
 
     opt_dict_Spin['a_Spin'][count] = a
     opt_dict_Spin['b_Spin'][count] = b
