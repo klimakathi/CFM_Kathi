@@ -6,11 +6,11 @@ from smoothing_splines import smooth_data
 from read_temp_acc import *
 
 if __name__ == '__main__':
-    start_year_ = -55000  # start input year for the actual run (second main run)
-    end_year_ = -30000  # end input year for the actual run (second main run)
+    start_year_ = -39000  # start input year for the actual run (second main run)
+    end_year_ = -33000  # end input year for the actual run (second main run)
 
-    data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-    results_path = '~/projects/Thesis/finalResults/secondSpin/'
+    data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+    results_path = '~/projects/finalResults/secondSpin/'
     resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_SPIN2_2022-05-31_01.hdf5'
     resultsFileName = 'CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5'
 

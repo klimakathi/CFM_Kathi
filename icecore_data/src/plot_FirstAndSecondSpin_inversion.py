@@ -6,7 +6,7 @@ from read_temp_acc import *
 import h5py
 from matplotlib.ticker import MaxNLocator
 
-data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 model_path_SPIN = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer_SPIN.h5'
 model_path_MAIN = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer.h5'
 

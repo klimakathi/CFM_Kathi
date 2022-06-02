@@ -3,7 +3,7 @@ from read_d15N import *
 from read_temp_acc import *
 import h5py
 
-data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 model_path = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer.h5'
 
 plt.rc('text', usetex=True)
