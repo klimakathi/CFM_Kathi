@@ -202,7 +202,9 @@ def get_d15N_data_gasage(path_data, ice_age_d15N_model):
 # -------------------
 
 if __name__ == '__main__':
-    model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
+    # model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
+    model_path = '~/projects/Thesis/finalResults/inversion/CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
+
     data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
     data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
@@ -229,10 +231,11 @@ if __name__ == '__main__':
     # plt.show()
 
 
-    test = False
+    test = True
 
     if test:
-        model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_65_30kyr_300m_5yr.hdf5'
+        # model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_65_30kyr_300m_5yr.hdf5'
+        model_path = '~/projects/Thesis/finalResults/inversion/CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
         data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 
         d15N2_model, iceAge_model, gasAge_model, deltaAge = get_d15N_model(model_path, mode='cod', firnair=False, cop=1/200.)

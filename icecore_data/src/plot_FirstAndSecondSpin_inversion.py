@@ -4,16 +4,21 @@ from read_temp_acc import *
 import h5py
 
 data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-model_path = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer.h5'
+model_path_SPIN = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer_SPIN.h5'
+model_path_MAIN = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer.h5'
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
+start_year_ = -36000  # start input year for the actual run (main run)
+end_year_ = -30000  # end input year for the actual run (main run)
+year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
+year_Spin2 = 6000  # Years of second Spin
+start_year_Spin2 = start_year_ - year_Spin2 / 2
+end_year_Spin2 = start_year_ + year_Spin2 / 2
 
-start_year_ = -44000  # start input year
-end_year_ = -38500  # end input year
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
@@ -21,7 +26,7 @@ cop_ = 1 / 200.  # frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
 cod_mode = 'cod'
 
-d15n_age = 'ice_age'  # 'gas_age'
+d15n_age = 'gas_age'  # 'gas_age', 'ice_age'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Read d18O data from NGRIP
@@ -45,7 +50,7 @@ stp = int(years * S_PER_YEAR / dt)  # -1       # total number of time steps, as 
 modeltime = np.linspace(start_year_, end_year_, stp + 1)[:-1]
 
 
-f = h5py.File(model_path, 'r')
+f = h5py.File(model_path_MAIN, 'r')
 a = f['a'][:]
 b = f['b'][:]
 cost = f['cost_function'][:]
@@ -81,7 +86,7 @@ print(costs[:10])
 
 
 # plots      -----------------------------------------------------------------------------------------------------------
-fig, axs = plt.subplots(3, sharex=False, sharey=False)
+fig, axs = plt.subplots(3, sharex=True, sharey=False)
 fig.set_figheight(10)
 fig.set_figwidth(15)
 # fig.suptitle('', fontsize=16)

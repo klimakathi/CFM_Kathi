@@ -14,8 +14,8 @@ import glob
 data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_35-30yr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_acc_2022-05-31_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_MAIN_2022-05-31_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
@@ -35,7 +35,7 @@ results_minimizer_main_path = 'resultsFolder/2022-05-31_01_resultsInversion_mini
 start_year_ = -36000  # start input year for the actual run (main run)
 end_year_ = -30000  # end input year for the actual run (main run)
 year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
-year_Spin2 = 3000  # Years of second Spin
+year_Spin2 = 6000  # Years of second Spin
 start_year_Spin2 = start_year_ - year_Spin2 / 2
 end_year_Spin2 = start_year_ + year_Spin2 / 2
 
@@ -50,7 +50,7 @@ cod_mode = 'cod'  # 'cod', 'lid', '0_diff'
 
 optimizer = 'minimize'  # 'least_squares', 'minimize'
 method = 'Nelder-Mead'  # 'BFGS', 'Nelder-Mead'
-theta_0 = [0.42, 75]  # initial guess
+theta_0 = [0.37, 73]  # initial guess
 N = 1000  # number of max iterations
 
 d15n_age = 'ice_age'  # 'gas_age', 'ice_age'  NOTE: Until now 'gas_age' only works if firnair_module=True !!!
@@ -72,6 +72,15 @@ depth_interval_Spin, d18O_interval_Spin, ice_age_interval_Spin = get_interval_da
                                                                                               end_year_Spin2)
 d18O_interval_perm_Spin = d18O_interval_Spin * 1000
 d18o_smooth_Spin = smooth_data(1 / 200., d18O_interval_perm_Spin, ice_age_interval_Spin, ice_age_interval_Spin)[0]
+
+t = 1. / theta_0[0] * d18o_smooth_Spin + theta_0[1]
+
+temp, temp_err = read_temp(data_path)
+temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_Spin2, end_year_Spin2)[0]
+plt.plot(ice_age_interval_Spin, t)
+plt.plot(ice_age_interval_Spin, temp_interval)
+plt.show()
+
 
 temp_interval_Spin = get_interval_temp(temp, temp_err, ice_age_full, start_year_Spin2, end_year_Spin2)[0]
 acc_interval_Spin = get_interval_acc(acc, ice_age_full, start_year_Spin2, end_year_Spin2)
@@ -105,7 +114,7 @@ d18o_smooth = smooth_data(1 / 200., d18O_interval_perm, ice_age_interval, ice_ag
 temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_, end_year_)[0]
 acc_interval = get_interval_acc(acc, ice_age_full, start_year_, end_year_)
 input_acc = np.array([ice_age_interval, acc_interval])
-np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc, delimiter=",")
+np.savetxt('../../CFM_main/CFMinput/optimize_acc_main.csv', input_acc, delimiter=",")
 
 years = (np.max(ice_age_interval) - np.min(ice_age_interval)) * 1.0
 dt = S_PER_YEAR / stpsPerYear  # seconds per time step
@@ -137,7 +146,7 @@ def fun_Spin(theta):
     b = theta[1]
     temperature_Spin = 1. / a * d18o_smooth_Spin + b
     input_temperature_Spin = np.array([ice_age_interval_Spin, temperature_Spin])
-
+    print(ice_age_interval_Spin[0], ice_age_interval_Spin[-1])
     np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature_Spin, delimiter=",")
     os.chdir('../../CFM_main/')
     os.system('python3 main.py FirnAir_NGRIP.json -n')

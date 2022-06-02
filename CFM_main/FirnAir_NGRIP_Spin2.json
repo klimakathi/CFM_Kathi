@@ -1,7 +1,7 @@
 {
     "InputFileFolder": "CFMinput",
     "InputFileNameTemp": "optimize_T.csv",
-    "InputFileNamebdot": "optimize_acc.csv",
+    "InputFileNamebdot": "optimize_acc_main.csv",
     "InputFileNameIso": "example_isotope.csv",
     "InputFileNamerho": "example_rhos.csv",
     "InputFileNamemelt": "example_melt.csv",
@@ -38,7 +38,7 @@
     "SecondSpin": true,
     "AirConfigName": "AirConfig.json",
     "TWriteInt": 1,
-    "TWriteStart": -46700,
+    "TWriteStart": -36000,
     "int_type": "linear",
     "int_type_options": [
         "nearest",
@@ -138,7 +138,7 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_MAIN_2022-05-31_01.hdf5",
     "spinFileName": "CFMspin_NGRIP_Barnola_49_38kyr_300m_2yr_instant_acc_2022-05-31_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,
