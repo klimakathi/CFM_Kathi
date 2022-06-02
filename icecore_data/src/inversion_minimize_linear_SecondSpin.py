@@ -204,8 +204,8 @@ def fun(theta):
     d15N2_model_interp, gasAge_model_interp = interpolate_d15Nmodel_2_d15Ndata(d15N2_model_, iceAge_model_,
                                                                                gasAge_model_, ice_age_data_interv)
 
-    cost_func = 1 / (np.shape(d15N2_model_interp[-minimizer_interval:])[0] - 1) \
-                * np.sum((d15N2_model_interp[-minimizer_interval:] - d15N2_data_interv[-minimizer_interval:]) ** 2)
+    cost_func = 1 / (np.shape(d15N2_model_interp[:])[0] - 1) \
+                * np.sum((d15N2_model_interp[:] - d15N2_data_interv[:]) ** 2)
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
