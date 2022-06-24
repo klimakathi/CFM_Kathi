@@ -11,8 +11,8 @@ import glob
 # ----------------------------------------------------------------------------------------------------------------------
 # Data & Model paths
 
-data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
+data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
 resultsFileName_Spin = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-06-22_01.hdf5'
 resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-06-22_01.hdf5'
@@ -20,7 +20,7 @@ resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/Thesis/finalResults/inversion/Goujon_long_LS_2022-06-22_01/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/Goujon_long_LS_2022-06-22_01/'
 
 json_SPIN = 'FirnAir_NGRIP_Goujon_long.json'
 json_MAIN = 'FirnAir_NGRIP_Spin2_Goujon_long.json'
