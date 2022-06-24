@@ -469,7 +469,7 @@ class FirnDensitySpin:
                 'dz': self.dz,
                 'LWC': self.LWC,
                 'MELT': self.MELT,
-                'FirnAir': self.c['FirnAir'],
+                'FirnAir': False,             # self.c['FirnAir'],
                 'bdot_av': self.bdot_av  # The long-term mean accumulation rate, related to first accumulation (csv)
             }
 

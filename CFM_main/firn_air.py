@@ -181,6 +181,7 @@ class FirnAir:
         # Porosity, from Goujon et al., 2003, equations 9 and 10
 
         self.por_tot = 1 - self.rho / RHO_I  # Total porosity
+        # print('maximum rho: ', np.max(self.rho))
         self.por_co = 1 - self.bcoRho / RHO_I  # mean close-off porosity
         alpha = 0.37  # constant determined in Goujon
         self.por_cl = np.zeros_like(self.por_tot)
@@ -192,6 +193,7 @@ class FirnAir:
         self.por_op = self.por_tot - self.por_cl  # Open Porosity
 
         co_ind = np.where(self.por_op <= 1e-10)[0][0]
+        # print('minimimal open porosity: ', np.min(self.por_op))
         self.rho_co = self.rho[co_ind]
         self.LIDRho = self.rho_co - 14  # LID depth (Blunier and Schwander, 2000)
 
@@ -205,8 +207,7 @@ class FirnAir:
         return self.rho_co, self.por_co, self.por_tot, self.por_cl, self.por_op, self.bcoRho, self.LIDRho
 
     def firn_air_diffusion(self, AirParams, iii):
-        if iii == 0:
-            print('why...', self.Gz)
+
         """
         Solve the diffusion equation.
         Calls solver.py
@@ -304,8 +305,8 @@ class FirnAir:
         self.Gz, w_p = transient_solve_TR(z_edges, z_P_vec, nt, self.dt, self.diffu, phi_0, nz_P, nz_fv, phi_s,
                                           self.rho, c_vol, mode, airdict)
         self.Gz = np.concatenate(([self.Gs[iii]], self.Gz[:-1]))
-        if iii == 0:
-            print(self.Gz)
+        # if iii == 0:
+            # print(self.Gz)
 
 
         ind_LID = np.where(self.z >= self.LID)[0]

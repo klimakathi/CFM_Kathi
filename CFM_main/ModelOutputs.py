@@ -43,7 +43,6 @@ class ModelOutputs:
                 intkind = 'linear'
 
             if varname == 'DIP':
-                print('HERE')
                 self.Mout_dict[varname] = np.zeros((TWlen + 1, 8), dtype=self.c['output_bits'])
                 self.Mout_dict[varname][0, :] = np.append(init_time, MOd[varname])
             elif varname == 'BCO':
@@ -85,9 +84,6 @@ class ModelOutputs:
 
                 else:  # not gridding outputs
                     self.Mout_dict[varname] = np.zeros((TWlen + 1, Glen + 1), dtype=self.c['output_bits'])
-                    print('Glen', Glen)
-                    print(varname)
-                    print(np.shape(MOd[varname]))
                     self.Mout_dict[varname][0, :] = np.append(init_time, MOd[varname])
 
     def updateMO(self, MOd, mtime, Wtracker):

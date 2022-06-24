@@ -1,7 +1,7 @@
 {
     "InputFileFolder": "CFMinput",
     "InputFileNameTemp": "optimize_T.csv",
-    "InputFileNamebdot": "optimize_acc_main.csv",
+    "InputFileNamebdot": "optimize_acc.csv",
     "InputFileNameIso": "example_isotope.csv",
     "InputFileNamerho": "example_rhos.csv",
     "InputFileNamemelt": "example_melt.csv",
@@ -15,7 +15,7 @@
     ],
     "DFresample": "1M",
     "DFfile": "NGRIP.pkl",
-    "physRho": "Barnola1991",
+    "physRho": "HLdynamic",
     "physRho_options": [
         "HLdynamic",
         "HLSigfus",
@@ -38,7 +38,7 @@
     "SecondSpin": false,
     "AirConfigName": "AirConfig.json",
     "TWriteInt": 1,
-    "TWriteStart": -119000,
+    "TWriteStart": -121500,
     "int_type": "linear",
     "int_type_options": [
         "nearest",
@@ -84,10 +84,10 @@
     "AutoSpinUpTime": false,
     "yearSpin": 3000,
     "H": 3000,
-    "HbaseSpin": 2700.0,
+    "HbaseSpin": 2450.0,
     "stpsPerYear": 0.5,
     "D_surf": 1.0,
-    "bdot_type": "instant",
+    "bdot_type": "mean",
     "bdot_type_options": [
         "instant",
         "mean",
@@ -138,8 +138,8 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-NM_SPIN2_2022-06-08_01_rand.hdf5",
-    "spinFileName": "CFMspin_NGRIP_Goujon_36_34kyr_300m_2yr_instant_acc_2022-06-07_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_HLdynamic_110-10kyr_300m_2yr_inversion-NM_SPIN2_2022-06-20_01.hdf5",
+    "spinFileName": "CFMspin_NGRIP_HLdynamic_110-10kyr_300m_2yr_2022-06-20_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,
     "multnodestocombine": 12,

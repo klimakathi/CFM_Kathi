@@ -203,43 +203,48 @@ def get_d15N_data_gasage(path_data, ice_age_d15N_model):
 
 if __name__ == '__main__':
     # model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_50_35kyr_300m_2yr_instant_acc.hdf5'
-    model_path = '~/projects/Thesis/finalResults/inversion/CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
+    model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-NM_MAIN_2022-06-10_01.hdf5'
 
-    data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-    data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
+    data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+    data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
     # ice_age, gas_age, d15N, d15N_err = get_d15N_data(data_path2)
     # plt.plot(gas_age, d15N)
     # plt.show()
 
-    d15n_model, ice_age_model, gas_age_model, delta_age = get_d15N_model(model_path, 'cod', firnair=False, cop=1/200.)
-    print(ice_age_model)
-    print(d15n_model)
+    d15n_model, ice_age_model, gas_age_model, delta_age = get_d15N_model(model_path, 'cod', firnair=True, cop=1/200.)
+    d15n_model2, ice_age_model2, gas_age_model2, delta_age2 = get_d15N_model(model_path, 'lid', firnair=True, cop=1/200.)
 
     ice_age_int, gas_age_int, d15N_int, d15N_err_int = get_d15N_data_interval(data_path2, ice_age_model)
     d15N_model_interp, gasage_interp = interpolate_d15Nmodel_2_d15Ndata(d15n_model, ice_age_model, gas_age_model, ice_age_int)
+    d15N_model_interp2, gasage_interp2 = interpolate_d15Nmodel_2_d15Ndata(d15n_model2, ice_age_model2, gas_age_model2, ice_age_int)
+
 
     # plt.plot(ice_age_model, d15n_model, label='model')
-    plt.plot(ice_age_int, d15N_int, 'ro', markersize=1, label='data')
-    plt.plot(ice_age_int, d15N_model_interp, 'bv', markersize=1, label='model interpolated')
+    plt.plot(ice_age_int, d15N_int, 'r', markersize=1, label='data')
+    # plt.plot(ice_age_int, d15N_model_interp, 'b', markersize=1, label='model interpolated cod')
+    # plt.plot(ice_age_int, d15N_model_interp2, 'orange', markersize=1, label='model interpolated lid')
+    plt.plot(ice_age_model, d15n_model, 'b', label='cod', linewidth=1)
+    plt.plot(ice_age_model2, d15n_model2, 'orange', label='lid', linewidth=1)
     plt.legend()
     plt.show()
 
+    print(d15n_model-d15n_model2)
     # plt.plot(gas_age_int, d15N_int, 'ro', markersize=1, label='data')
     # plt.plot(gasage_interp, d15N_model_interp, 'bv', markersize=1, label='model interpolated')
     # plt.legend()
     # plt.show()
 
 
-    test = True
+    test = False
 
     if test:
         # model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_65_30kyr_300m_5yr.hdf5'
-        model_path = '~/projects/Thesis/finalResults/inversion/CFMresults_NGRIP_Barnola_35-30kyr_300m_2yr_inversion-NM_SPIN2_2022-05-31_01.hdf5'
-        data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+        model_path = '../../CFM_main/resultsFolder/CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-NM_MAIN_2022-06-10_01.hdf5'
+        data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 
         d15N2_model, iceAge_model, gasAge_model, deltaAge = get_d15N_model(model_path, mode='cod', firnair=False, cop=1/200.)
-        d15N2_data, d15N2_err = get_d15N_data(data_path, iceAge_model, cop=1/200.)
+        ice_age_data, gas_age_data, d15N2_data, d15N2_err = get_d15N_data(data_path2)
 
         plt.plot(iceAge_model, d15N2_model, label='model')
         plt.plot(iceAge_model, d15N2_data, 'ko', markersize=1, label='data')

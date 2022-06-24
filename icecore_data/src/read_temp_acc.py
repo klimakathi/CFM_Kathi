@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from read_d18O import find_start_end_index
+from read_d18O import *
+import matplotlib.pyplot as plt
 
 
 def read_temp(path_data):
@@ -29,3 +30,19 @@ def get_interval_acc(acc, ice_age_data, start_year, end_year):
     return acc_interval
 
 
+if __name__ == '__main__':
+    data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+    start_year = -120000
+    end_year_ = -10000
+    depth_full, d18O_full, ice_age_full = read_data_d18O(data_path)
+    temp, temp_err = read_temp(data_path)
+    acc = read_acc(data_path)
+    depth_interval, d18O_interval, ice_age_interval = get_interval_data_noTimeGrid(depth_full, d18O_full,
+                                                                                   ice_age_full,
+                                                                                   start_year=-120000, end_year=-10000)
+
+    acc_interval = get_interval_acc(acc, ice_age_full, start_year=-120000, end_year=-10000)
+
+    input_acc = np.array([ice_age_interval, acc_interval])
+    plt.plot(input_acc[0], input_acc[1])
+    plt.show()

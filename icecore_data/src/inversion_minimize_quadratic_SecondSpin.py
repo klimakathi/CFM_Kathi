@@ -14,20 +14,20 @@ import glob
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_HLdynamic_36-34kyr_300m_2yr_inversion-NM_SPIN2_2022-06-06_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_HLdynamic_36-34kyr_300m_2yr_inversion-NM_MAIN_2022-06-06_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_36-34kyr_300m_2yr_inversion-NM_SPIN2_2022-06-03_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_Barnola_36-34kyr_300m_2yr_inversion-NM_MAIN_2022-06-03_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/finalResults/inversion/2022-06-06_01/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/2022-06-03_01/'
 
-json_SPIN = 'FirnAir_NGRIP.json'
-json_MAIN = 'FirnAir_NGRIP_Spin2.json'
+json_SPIN = 'FirnAir_NGRIP_2022-06-03_01.json'
+json_MAIN = 'FirnAir_NGRIP_Spin2_2022-06-03_01.json'
 
 # optimization parameter files
-results_minimizer_spin_path = 'resultsFolder/2022-06-06_01_resultsInversion_minimizer_SPIN.h5'
-results_minimizer_main_path = 'resultsFolder/2022-06-06_01_resultsInversion_minimizer.h5'
+results_minimizer_spin_path = 'resultsFolder/2022-06-02_03_resultsInversion_minimizer_SPIN.h5'
+results_minimizer_main_path = 'resultsFolder/2022-06-02_03_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -86,7 +86,7 @@ plt.show()
 temp_interval_Spin = get_interval_temp(temp, temp_err, ice_age_full, start_year_Spin2, end_year_Spin2)[0]
 acc_interval_Spin = get_interval_acc(acc, ice_age_full, start_year_Spin2, end_year_Spin2)
 input_acc_Spin = np.array([ice_age_interval_Spin, acc_interval_Spin])
-np.savetxt('../../CFM_main/CFMinput/optimize_acc.csv', input_acc_Spin, delimiter=",")
+np.savetxt('../../CFM_main/CFMinput/optimize_acc_2022-06-03_01.csv', input_acc_Spin, delimiter=",")
 
 years_Spin = (np.max(ice_age_interval_Spin) - np.min(ice_age_interval_Spin)) * 1.0
 dt_Spin = S_PER_YEAR / stpsPerYear  # seconds per time step
@@ -115,7 +115,7 @@ d18o_smooth = smooth_data(1 / 200., d18O_interval_perm, ice_age_interval, ice_ag
 temp_interval = get_interval_temp(temp, temp_err, ice_age_full, start_year_, end_year_)[0]
 acc_interval = get_interval_acc(acc, ice_age_full, start_year_, end_year_)
 input_acc = np.array([ice_age_interval, acc_interval])
-np.savetxt('../../CFM_main/CFMinput/optimize_acc_main.csv', input_acc, delimiter=",")
+np.savetxt('../../CFM_main/CFMinput/optimize_acc_main_2022-06-03_01.csv', input_acc, delimiter=",")
 
 years = (np.max(ice_age_interval) - np.min(ice_age_interval)) * 1.0
 dt = S_PER_YEAR / stpsPerYear  # seconds per time step
@@ -148,9 +148,9 @@ def fun_Spin(theta):
     temperature_Spin = 1. / a * d18o_smooth_Spin + b
     input_temperature_Spin = np.array([ice_age_interval_Spin, temperature_Spin])
     print(ice_age_interval_Spin[0], ice_age_interval_Spin[-1])
-    np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature_Spin, delimiter=",")
+    np.savetxt('../../CFM_main/CFMinput/optimize_T_2022-06-03_01.csv', input_temperature_Spin, delimiter=",")
     os.chdir('../../CFM_main/')
-    os.system('python3 main.py FirnAir_NGRIP.json -n')
+    os.system('python3 main.py FirnAir_NGRIP_2022-06-03_01.json -n')
     os.chdir('../icecore_data/src/')
 
     d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(spin2_path, mode=cod_mode,
@@ -190,9 +190,9 @@ def fun(theta):
     temperature = 1. / a * d18o_smooth + b
     input_temperature = np.array([ice_age_interval, temperature])
 
-    np.savetxt('../../CFM_main/CFMinput/optimize_T.csv', input_temperature, delimiter=",")
+    np.savetxt('../../CFM_main/CFMinput/optimize_T_2022-06-03_01.csv', input_temperature, delimiter=",")
     os.chdir('../../CFM_main/')
-    os.system('python3 main.py FirnAir_NGRIP_Spin2.json')
+    os.system('python3 main.py FirnAir_NGRIP_Spin2_2022-06-03_01.json')
     os.chdir('../icecore_data/src/')
 
     d15N2_model_, iceAge_model_, gasAge_model_, deltaAge_ = get_d15N_model(model_path, mode=cod_mode,
@@ -227,7 +227,7 @@ def fun(theta):
 
 # Spin prepare json
 os.chdir('../../CFM_main/')
-with open('FirnAir_NGRIP.json', 'r+') as json_file:
+with open('FirnAir_NGRIP_2022-06-03_01.json', 'r+') as json_file:
     cfm_params = json.load(json_file)
     cfm_params['TWriteStart'] = start_year_Spin2
     cfm_params['yearSpin'] = year_Spin
@@ -270,7 +270,7 @@ os.system('mv %s %s' % (model_path_2, finalResults_path_modelruns))
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Main run prepare json
-with open('FirnAir_NGRIP_Spin2.json', 'r+') as json_file:
+with open('FirnAir_NGRIP_Spin2_2022-06-03_01.json', 'r+') as json_file:
     cfm_params = json.load(json_file)
     cfm_params['TWriteStart'] = start_year_
     # cfm_params['SecondSpin'] = True

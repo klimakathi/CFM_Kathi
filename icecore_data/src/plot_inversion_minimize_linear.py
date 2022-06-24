@@ -4,7 +4,7 @@ from read_temp_acc import *
 import h5py
 
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-model_path = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer.h5'
+model_path = '../../../finalResults/inversion/Barnola_long_NM_2022-06-15_01/2022-06-15_01_resultsInversion_minimizer.h5'
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -12,16 +12,16 @@ plt.rc('font', family='serif')
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 
-start_year_ = -44000  # start input year
-end_year_ = -38500  # end input year
+start_year_ = -114500  # start input year
+end_year_ = -10000  # end input year
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
 cop_ = 1 / 200.  # frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
-cod_mode = 'cod'
+cod_mode = 'lid'
 
-d15n_age = 'ice_age'  # 'gas_age'
+d15n_age = 'gas_age'  # 'gas_age'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Read d18O data from NGRIP
@@ -55,7 +55,7 @@ d15n_data_err = f['d15N_data_err'][:]
 ice_age = f['ice_age'][:]
 print(np.shape(ice_age[-1, :]))
 gas_age = f['gas_age'][:]
-
+print(cost)
 # temperature ----------------------------------------------------------------------------------------------------------
 t0 = 1./a[0] * d18o_smooth + b[0]
 t1 = 1./a[-1] * d18o_smooth + b[-1]
@@ -112,12 +112,12 @@ else:
     axs[1].plot(gas_age[0, :], d15n[0, :], label='first guess')
     axs[1].plot(gas_age[-1, :], d15n[-1, :], label='Best fit')
     axs[1].set_xlabel('GICC05modelext gas age [yr]')
-axs[1].set_ylim([0.15, 0.55])
+axs[1].set_ylim([0.2, 0.9])
 axs[1].set_ylabel('$\delta^{15}$N$_2$ [‰]')
 axs[1].grid(linestyle='--', color='gray', lw='0.5')
 axs[1].legend()
 
-axs[2].plot(costs)
+axs[2].plot(cost)
 axs[2].set_xlabel('Iteration')
 axs[2].set_ylabel('Cost function')
 axs[2].grid(linestyle='--', color='gray', lw='0.5')

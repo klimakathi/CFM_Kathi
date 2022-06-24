@@ -328,8 +328,6 @@ class FirnDensityNoSpin:
             # self.t          = 1.0 / self.c['stpsPerYear']                   # years per time step
             self.t = (1.0 / self.c['stpsPerYear']) * np.ones_like(self.dt)
             init_time = input_year_temp[0]
-            print(input_year_temp[0])
-            print('init_time: ', np.shape(init_time))
 
             # TODO: do not quite understand the init_time = -9999
 
@@ -874,6 +872,7 @@ class FirnDensityNoSpin:
 
         print('modeltime', self.modeltime[0], self.modeltime[-1])
         for iii in range(self.stp):
+            # print(self.modeltime[iii])
             mtime = self.modeltime[iii]
             self.D_surf[iii] = iii
             if iii == 1000:
@@ -1174,16 +1173,16 @@ class FirnDensityNoSpin:
                     'w_firn': self.w_firn
                 }
                 for gas in self.cg['gaschoice']:
-                    if iii == 0:
-                        print('before first diffusion, 0: ', self.Gz[gas])
+                    # if iii == 0:
+                        # print('before first diffusion, 0: ', self.Gz[gas])
                     self.Gz[gas], self.diffusivity, self.w_air, self.gas_age = self.FA[gas].firn_air_diffusion(
                         AirParams, iii)
-                    if iii == 0:
-                        print('0: ', self.Gz[gas])
-                    if iii == 1:
-                        print('1: ', self.Gz[gas])
-                    if iii == 2:
-                        print('2: ', self.Gz[gas])
+                    # if iii == 0:
+                        # print('0: ', self.Gz[gas])
+                    # if iii == 1:
+                       #  print('1: ', self.Gz[gas])
+                    # if iii == 2:
+                        # print('2: ', self.Gz[gas])
             ####################
 
             ### Isotopes #######

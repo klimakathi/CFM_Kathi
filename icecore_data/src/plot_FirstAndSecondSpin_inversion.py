@@ -7,8 +7,8 @@ import h5py
 from matplotlib.ticker import MaxNLocator
 
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-model_path_SPIN = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer_SPIN.h5'
-model_path_MAIN = '../../../finalResults/inversion/2022-05-31_01/2022-05-31_01_resultsInversion_minimizer.h5'
+model_path_SPIN = '../../../finalResults/inversion/2022-06-07_01_Goujon_linear/2022-06-07_01_resultsInversion_minimizer_SPIN.h5'
+model_path_MAIN = '../../../finalResults/inversion/2022-06-07_01_Goujon_linear/2022-06-07_01_resultsInversion_minimizer.h5'
 
 plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
@@ -16,11 +16,12 @@ plt.rc('font', family='serif')
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
 start_year_ = -36000  # start input year for the actual run (main run)
-end_year_ = -30000  # end input year for the actual run (main run)
+end_year_ = -34000  # end input year for the actual run (main run)
 year_Spin = 3000  # Years of first Spin (with constant temperature and accumulation)
-year_Spin2 = 6000  # Years of second Spin
-start_year_Spin2 = start_year_ - year_Spin2 / 2
-end_year_Spin2 = start_year_ + year_Spin2 / 2
+year_Spin2 = 8000  # Years of second Spin
+overlap = 2000
+start_year_Spin2 = start_year_ - (year_Spin2 - overlap)
+end_year_Spin2 = start_year_ + overlap
 
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
@@ -92,6 +93,7 @@ d15n_data = f['d15N_data'][:]
 d15n_data_err = f['d15N_data_err'][:]
 ice_age = f['ice_age'][:]
 gas_age = f['gas_age'][:]
+print(gas_age_Spin[-1])
 
 # temperature ----------------------------------------------------------------------------------------------------------
 t0_Spin = 1./a_Spin[0] * d18o_smooth_Spin + b_Spin[0]
@@ -119,6 +121,7 @@ d15n_data_err_Spin_first = np.delete(d15n_data_err_Spin[0, :], entry0_Spin_first
 entry0_Spin_best = np.where(ice_age_Spin[-1, :] == 0.)
 ice_age_Spin_best = np.delete(ice_age_Spin[-1, :], entry0_Spin_best)
 gas_age_Spin_best = np.delete(gas_age_Spin[-1, :], entry0_Spin_best)
+print(gas_age_Spin_best)
 d15n_Spin_best = np.delete(d15n_Spin[-1, :], entry0_Spin_best)
 d15n_data_Spin_best = np.delete(d15n_data_Spin[-1, :], entry0_Spin_best)
 d15n_data_err_Spin_best = np.delete(d15n_data_err_Spin[0, :], entry0_Spin_best)
@@ -225,7 +228,7 @@ else:
     axs[1].plot(gas_age_Spin_best, d15n_Spin_best, linewidth=1, linestyle='-', color='blue', label='Best fit')
     axs[1].set_xlabel('GICC05modelext gas age [yr]')
 
-axs[1].set_ylim([0.15, 0.55])
+axs[1].set_ylim([0.0, 0.55])
 axs[1].set_xlim(start_year_Spin2 - year_Spin - 500, end_year_ + 500)
 axs[1].set_ylabel('$\delta^{15}$N$_2$ [‰]')
 axs[1].grid(linestyle='--', color='gray', lw='0.5')
