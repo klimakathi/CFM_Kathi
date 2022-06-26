@@ -1,4 +1,3 @@
-import numpy as np
 from scipy.optimize import least_squares
 from read_d18O import *
 from read_d15N import *
@@ -12,23 +11,23 @@ import glob
 # ----------------------------------------------------------------------------------------------------------------------
 # Data & Model paths
 
-data_path = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
-data_path2 = '~/projects/Thesis/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
+data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
+data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-06-24_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-06-24_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-06-26_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-06-26_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/Thesis/finalResults/inversion/Goujon_long_LS_2022-06-24_01/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/Barnola_long_LS_2022-06-26_01/'
 
-json_SPIN = 'FirnAir_NGRIP_Goujon_long.json'
-json_MAIN = 'FirnAir_NGRIP_Spin2_Goujon_long.json'
+json_SPIN = 'FirnAir_NGRIP_Barnola_long.json'
+json_MAIN = 'FirnAir_NGRIP_Spin2_Barnola_long.json'
 
 # optimization parameter files
-results_minimizer_spin_path = 'resultsFolder/2022-06-24_01_resultsInversion_minimizer_SPIN.h5'
-results_minimizer_main_path = 'resultsFolder/2022-06-24_01_resultsInversion_minimizer.h5'
+results_minimizer_spin_path = 'resultsFolder/2022-06-26_01_resultsInversion_minimizer_SPIN.h5'
+results_minimizer_main_path = 'resultsFolder/2022-06-26_01_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -248,8 +247,8 @@ def fun(theta):
         cost_func = 1 / (np.shape(d15N2_model_interp[index_minimize:])[0] - 1) \
                         * np.sum(((d15N2_model_interp[index_minimize:] - d15N2_data_interv[index_minimize:])
                                   / d15N2_data_err_interv[index_minimize:]) ** 2)
-        residuals = (d15N2_model_interp[index_minimize:] - d15N2_data_interv[index_minimize:])\
-                    / d15N2_data_err_interv[index_minimize:]
+        residuals = (d15N2_model_interp[-1390:] - d15N2_data_interv[-1390:])\
+                    / d15N2_data_err_interv[-1390:]
 
         print('shape minimize interval:', np.shape(d15N2_model_interp))
         opt_dict['d15N@cod'][count, :np.shape(d15N2_model_interp)[0]] = d15N2_model_interp[:]
@@ -260,6 +259,8 @@ def fun(theta):
         print('d15nmodel: ', d15N2_model_interp[index_minimize:])
         print('d15n_data: ', d15N2_data_interv[index_minimize:])
         print('d15n_err: ', d15N2_data_err_interv[index_minimize:])
+        print(np.shape(d15N2_model_interp[index_minimize:]), np.shape(d15N2_data_interv[index_minimize:]),
+              np.shape(d15N2_data_err_interv[index_minimize:]))
     else:
         print('There is no output file -_- ')
         os.chdir('../icecore_data/src/')
@@ -267,7 +268,7 @@ def fun(theta):
         print('------------------------------------------------------------------------------------------')
         print('<<<<<<<< Close-off crashed everything again - Setting cost function to 100! >>>>>>>>>>>>>>')
         print('------------------------------------------------------------------------------------------')
-
+        residuals = np.ones(1390) * 0.5
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
