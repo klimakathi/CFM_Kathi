@@ -14,20 +14,20 @@ import glob
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-NM_SPIN2_2022-06-22_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-NM_MAIN_2022-06-22_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_HLSigfus_110-10kyr_300m_2yr_inversion-NM_SPIN2_2022-06-26_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_HLSigfus_110-10kyr_300m_2yr_inversion-NM_MAIN_2022-06-26_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/finalResults/inversion/Goujon_long_NM_2022-06-22_01/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/HLSigfus_long_NM_2022-06-26_01/'
 
-json_SPIN = 'FirnAir_NGRIP_Goujon_long.json'
-json_MAIN = 'FirnAir_NGRIP_Spin2_Goujon_long.json'
+json_SPIN = 'FirnAir_NGRIP_HLSigfus_long.json'
+json_MAIN = 'FirnAir_NGRIP_Spin2_HLSigfus_long.json'
 
 # optimization parameter files
-results_minimizer_spin_path = 'resultsFolder/2022-06-22_01_resultsInversion_minimizer_SPIN.h5'
-results_minimizer_main_path = 'resultsFolder/2022-06-22_01_resultsInversion_minimizer.h5'
+results_minimizer_spin_path = 'resultsFolder/2022-06-26_01_resultsInversion_minimizer_SPIN.h5'
+results_minimizer_main_path = 'resultsFolder/2022-06-26_01_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -46,7 +46,7 @@ firnair_module = True  # this is to specify whether we use the firnair module in
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
-physRho_option = 'Goujon2003'      # 'HLdynamic', 'Goujon2003', 'HLSigfus', 'Barnola1991'
+physRho_option = 'HLSigfus'      # 'HLdynamic', 'Goujon2003', 'HLSigfus', 'Barnola1991'
 
 cop_ = 1 / 200.  # cut-off frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
