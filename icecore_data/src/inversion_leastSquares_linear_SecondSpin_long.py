@@ -7,6 +7,7 @@ from secondSpin import read_data_at_secondSpin, write_data_2_new_spinFile, find_
 import os
 import json
 import glob
+import math
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Data & Model paths
@@ -14,20 +15,20 @@ import glob
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-06-26_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_Barnola_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-06-26_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-06-27_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-06-27_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/finalResults/inversion/Barnola_long_LS_2022-06-26_01/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/Goujon_long_LS_2022-06-27_01/'
 
-json_SPIN = 'FirnAir_NGRIP_Barnola_long.json'
-json_MAIN = 'FirnAir_NGRIP_Spin2_Barnola_long.json'
+json_SPIN = 'FirnAir_NGRIP_Goujon_long.json'
+json_MAIN = 'FirnAir_NGRIP_Spin2_Goujon_long.json'
 
 # optimization parameter files
-results_minimizer_spin_path = 'resultsFolder/2022-06-26_01_resultsInversion_minimizer_SPIN.h5'
-results_minimizer_main_path = 'resultsFolder/2022-06-26_01_resultsInversion_minimizer.h5'
+results_minimizer_spin_path = 'resultsFolder/2022-06-27_01_Goujon_LS_long_resultsInversion_minimizer_SPIN.h5'
+results_minimizer_main_path = 'resultsFolder/2022-06-27_01_Goujon_LS_long_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -45,7 +46,7 @@ firnair_module = True  # this is to specify whether we use the firnair module in
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
 
-physRho_option = 'Barnola1991'  # 'HLdynamic', 'Goujon2003', 'HLSigfus', 'Barnola1991'
+physRho_option = 'Goujon2003'  # 'HLdynamic', 'Goujon2003', 'HLSigfus', 'Barnola1991'
 
 cop_ = 1 / 200.  # cut-off frequency for cubic smoothing spline (low pass filter)
 time_grid_stp_ = 20  # step length time grid --> also for cubic smoothing spline
@@ -166,13 +167,18 @@ def fun_Spin(theta):
 
         d15N2_model_interp, gasAge_model_interp = interpolate_d15Nmodel_2_d15Ndata(d15N2_model_, iceAge_model_,
                                                                                    gasAge_model_, ice_age_data_interv)
-        shape_optimize = int(np.shape(d15N2_model_interp)[0] / 2)
+        shape_optimize = 36 # int(np.shape(d15N2_model_interp)[0] / 2)
 
         cost_func = 1 / (np.shape(d15N2_model_interp[-shape_optimize:])[0] - 1) \
                     * np.sum(((d15N2_model_interp[-shape_optimize:] - d15N2_data_interv[-shape_optimize:])
                               / d15N2_data_err_interv[-shape_optimize:]) ** 2)
-        residuals = (d15N2_model_interp[-shape_optimize:] - d15N2_data_interv[-shape_optimize:])\
-                    / d15N2_data_err_interv[-shape_optimize:]
+        if math.isnan(cost_func):
+            linear = np.linspace(0, -30, 36)
+            print(linear)
+            residuals = np.ones(36) * 0.8 * linear
+        else:
+            residuals = (d15N2_model_interp[-shape_optimize:] - d15N2_data_interv[-shape_optimize:])#\
+                    #/ d15N2_data_err_interv[-shape_optimize:]
         print('d15nmodel: ', d15N2_model_interp[-shape_optimize:])
         print('d15n_data: ', d15N2_data_interv[-shape_optimize:])
         print('d15n_err: ', d15N2_data_err_interv[-shape_optimize:])
@@ -189,7 +195,9 @@ def fun_Spin(theta):
         print('------------------------------------------------------------------------------------------')
         print('<<<<<<<< Close-off crashed everything again - Setting cost function to 800! >>>>>>>>>>>>>>')
         print('------------------------------------------------------------------------------------------')
-        residuals = np.ones([36]) * 0.3
+        linear = np.linspace(0, 100, 36)
+        print(linear)
+        residuals = np.ones(36) * 0.8 * linear
 
     opt_dict_Spin['a_Spin'][count] = a
     opt_dict_Spin['b_Spin'][count] = b
@@ -247,7 +255,11 @@ def fun(theta):
         cost_func = 1 / (np.shape(d15N2_model_interp[index_minimize:])[0] - 1) \
                         * np.sum(((d15N2_model_interp[index_minimize:] - d15N2_data_interv[index_minimize:])
                                   / d15N2_data_err_interv[index_minimize:]) ** 2)
-        residuals = (d15N2_model_interp[-1390:] - d15N2_data_interv[-1390:])\
+        if math.isnan(cost_func):
+            linear = np.linspace(0, 100, 1390)
+            residuals = np.ones(1390) * 0.8 * linear
+        else:
+            residuals = (d15N2_model_interp[-1390:] - d15N2_data_interv[-1390:])\
                     / d15N2_data_err_interv[-1390:]
 
         print('shape minimize interval:', np.shape(d15N2_model_interp))
@@ -264,11 +276,12 @@ def fun(theta):
     else:
         print('There is no output file -_- ')
         os.chdir('../icecore_data/src/')
-        cost_func = 100.
+        cost_func = 800.
         print('------------------------------------------------------------------------------------------')
-        print('<<<<<<<< Close-off crashed everything again - Setting cost function to 100! >>>>>>>>>>>>>>')
+        print('<<<<<<<< Close-off crashed everything again - Setting cost function to 800! >>>>>>>>>>>>>>')
         print('------------------------------------------------------------------------------------------')
-        residuals = np.ones(1390) * 0.5
+        linear = np.linspace(0, 100, 1390)
+        residuals = np.ones(1390) * 0.5 * linear
 
     opt_dict['a'][count] = a
     opt_dict['b'][count] = b
@@ -301,7 +314,7 @@ with open(json_SPIN, 'r+') as json_file:
 
 # Spin run optimization
 os.chdir('../icecore_data/src/')
-res_Spin = least_squares(fun_Spin, theta_0, method='trf', gtol=1e-100, x_scale=[0.5, 100], diff_step=[0.001, 0.01])
+res_Spin = least_squares(fun_Spin, theta_0, method='trf', gtol=1e-8, x_scale=[0.5, 100], diff_step=[0.01, 0.05], verbose=2)
 entry_0 = np.where(opt_dict_Spin['count_Spin'] == 0)[0]
 opt_dict_Spin['count_Spin'] = np.delete(opt_dict_Spin['count_Spin'], entry_0[1:])
 opt_dict_Spin['count_Spin'] = opt_dict_Spin['count_Spin'][:-1]
@@ -352,7 +365,7 @@ with open(json_MAIN, 'r+') as json_file:
 
 # Main run optimization
 os.chdir('../icecore_data/src/')
-res_Main = least_squares(fun, theta_Spin, method='trf', gtol=1e-100, x_scale=[0.5, 100], diff_step=[0.001, 0.01])
+res_Main = least_squares(fun, theta_Spin, method='trf', gtol=1e-8, x_scale=[0.5, 100], diff_step=[0.01, 0.05], verbose=2)
 entry_0 = np.where(opt_dict['count'] == 0)[0]
 opt_dict['count'] = np.delete(opt_dict['count'], entry_0[1:])
 opt_dict['count'] = opt_dict['count'][:-1]
