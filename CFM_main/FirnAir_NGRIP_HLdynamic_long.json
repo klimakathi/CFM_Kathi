@@ -138,8 +138,8 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_HLdynamic_110-10kyr_300m_2yr_inversion-NM_SPIN2_2022-06-20_01.hdf5",
-    "spinFileName": "CFMspin_NGRIP_HLdynamic_110-10kyr_300m_2yr_2022-06-20_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_HLdynamic_110-10kyr_300m_2yr_inversion-NM_nodiff_SPIN2_2022-07-30_01.hdf5",
+    "spinFileName": "CFMspin_NGRIP_HLdynamic_110-10kyr_300m_2yr_2022-07-30_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,
     "multnodestocombine": 12,
