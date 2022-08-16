@@ -1,4 +1,24 @@
 ``[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3585885.svg)](https://doi.org/10.5281/zenodo.3585885)
+# Note: Thesis Katharina
+
+## Inversion
+All Python scripts for the inversion of the CFM are contained in CFM_Kathi4/icecore_data/src/.
+You will find the following scripts:
+- calculate_d15N.py: calculates thermal and gravitational fractionation of stable nitrogen isotopes
+- create_input.py: creates input temperature and snow accumulation .csv files 
+- data_csv.py: interpolates all datasets on the same (ice) age scale
+- read_d15N.py: reads d15N from data set or from CFM output files and finds d15N at lock-in depth/close-off depth
+- read_d18O.py: reads d18O from data set and smoothes d18O
+- read_temp_acc.py: reads temperature and accumulation according to Kindler et. al (2014) from data set
+- smoothing_slines.py: cubic smoothing splines according using csaps
+- secondSpin.py: rewrite spin file from CFM and read firn parameters from second spin for new CFM run
+- inversion_leastSquares_linear_SecondSpin_long.py: performs inversion using least squares algorithm over whole dataset and using a second spin
+- inversion_minimize_linear_SecondSpin_long.py: performs inversion using Nelder-Mead algorithm over whole dataset and using a second spin
+- random_inversion.py: performs inversion of randomly selected firn models for each iteration step of the inversion
+
+## Code Analysis
+- solver2.py and test_w.py: scripts to analyze how to optimize solver.py
+- temperature_accumulation.py: create periodic temperature and accumulation rate forcing input files.
 
 # The Community Firn Model
 
