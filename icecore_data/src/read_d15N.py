@@ -118,16 +118,18 @@ def get_d15N_model(path_model, mode, firnair, cop):
         d15n_cod = d15N_tot(file=file, mode=mode)
         close_off_depth = get_cod(file=file, mode=mode)
         ice_age_cod = np.ones_like(close_off_depth)
+
         for i in range(depth_model.shape[0]):
             index = int(np.where(depth_model[i, 1:] == close_off_depth[i])[0])
             ice_age_cod[i] = ice_age_model[i, index]
 
         ice_age_cod = ice_age_cod[1:]
+        gas_age_cod = np.zeros_like(ice_age_cod)
         modeltime = depth_model[1:, 0]
         ice_age_cod_smooth = smooth_data(cop, ice_age_cod, modeltime, modeltime)[0]
         ice_age = modeltime - ice_age_cod_smooth
-        gas_age = np.zeros_like(ice_age)
-        delta_age = np.zeros_like(ice_age)
+        delta_age = ice_age_cod_smooth - gas_age_cod
+        gas_age = ice_age + delta_age
         d15n_cod = d15n_cod[1:]
 
     return d15n_cod, ice_age, gas_age, delta_age

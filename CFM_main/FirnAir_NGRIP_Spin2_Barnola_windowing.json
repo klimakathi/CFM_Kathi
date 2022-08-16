@@ -15,7 +15,7 @@
     ],
     "DFresample": "1M",
     "DFfile": "NGRIP.pkl",
-    "physRho": "HLdynamic",
+    "physRho": "HLSigfus",
     "physRho_options": [
         "HLdynamic",
         "HLSigfus",
@@ -38,7 +38,7 @@
     "SecondSpin": true,
     "AirConfigName": "AirConfig.json",
     "TWriteInt": 1,
-    "TWriteStart": -114500,
+    "TWriteStart": -15000,
     "int_type": "linear",
     "int_type_options": [
         "nearest",
@@ -138,8 +138,8 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_HLdynamic_110-10kyr_300m_2yr_inversion-NM_nodiff_MAIN_2022-07-30_01.hdf5",
-    "spinFileName": "CFMspin_NGRIP_HLdynamic_110-10kyr_300m_2yr_2022-07-30_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_Barnola_110-10kyr_550m_2yr_inversion-LS_MAIN_2022-08-01_01.hdf5",
+    "spinFileName": "CFMspin_NGRIP_Barnola_110-10kyr_300m_2yr_2022-06-16_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,
     "multnodestocombine": 12,
