@@ -1,7 +1,7 @@
 ``[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3585885.svg)](https://doi.org/10.5281/zenodo.3585885)
 
-# Note: Please find final version used for inversion on branch "CFM_final"
-
+# Note: Thesis Katharina
+Please find final version used for inversion on branch "CFM_final"
 
 # The Community Firn Model
 
