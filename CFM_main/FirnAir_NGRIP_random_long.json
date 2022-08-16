@@ -1,7 +1,7 @@
 {
     "InputFileFolder": "CFMinput",
     "InputFileNameTemp": "optimize_T.csv",
-    "InputFileNamebdot": "optimize_acc_main.csv",
+    "InputFileNamebdot": "optimize_acc.csv",
     "InputFileNameIso": "example_isotope.csv",
     "InputFileNamerho": "example_rhos.csv",
     "InputFileNamemelt": "example_melt.csv",
@@ -15,7 +15,7 @@
     ],
     "DFresample": "1M",
     "DFfile": "NGRIP.pkl",
-    "physRho": "Goujon2003",
+    "physRho": "HLdynamic",
     "physRho_options": [
         "HLdynamic",
         "HLSigfus",
@@ -35,10 +35,10 @@
     "MELT": false,
     "ReehCorrectedT": false,
     "FirnAir": true,
-    "SecondSpin": true,
+    "SecondSpin": false,
     "AirConfigName": "AirConfig.json",
     "TWriteInt": 1,
-    "TWriteStart": -114500,
+    "TWriteStart": -121500,
     "int_type": "linear",
     "int_type_options": [
         "nearest",
@@ -138,7 +138,7 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-NM_nodiff_MAIN_2022-07-30_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_random_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-08-01_01.hdf5",
     "spinFileName": "CFMspin_NGRIP_Goujon_110-10kyr_300m_2yr_2022-07-30_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,

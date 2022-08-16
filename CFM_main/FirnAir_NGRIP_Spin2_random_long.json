@@ -15,7 +15,7 @@
     ],
     "DFresample": "1M",
     "DFfile": "NGRIP.pkl",
-    "physRho": "Goujon2003",
+    "physRho": "Barnola1991",
     "physRho_options": [
         "HLdynamic",
         "HLSigfus",
@@ -138,7 +138,7 @@
         "runoff",
         "refrozen"
     ],
-    "resultsFileName": "CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-NM_nodiff_MAIN_2022-07-30_01.hdf5",
+    "resultsFileName": "CFMresults_NGRIP_random_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-08-01_01.hdf5",
     "spinFileName": "CFMspin_NGRIP_Goujon_110-10kyr_300m_2yr_2022-07-30_01.hdf5",
     "doublegrid": false,
     "nodestocombine": 3,

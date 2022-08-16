@@ -15,20 +15,20 @@ import math
 data_path = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/interpolated_data.xlsx'
 data_path2 = '~/projects/CFM_Kathi/icecore_data/data/NGRIP/supplement.xlsx'
 
-resultsFileName_Spin = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_SPIN2_2022-06-27_01.hdf5'
-resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_MAIN_2022-06-27_01.hdf5'
+resultsFileName_Spin = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_nodiff_SPIN2_2022-07-30_01.hdf5'
+resultsFileName_Main = 'CFMresults_NGRIP_Goujon_110-10kyr_300m_2yr_inversion-LS_nodiff_MAIN_2022-07-30_01.hdf5'
 
 spin2_path = '../../CFM_main/resultsFolder/' + resultsFileName_Spin
 model_path = '../../CFM_main/resultsFolder/' + resultsFileName_Main
 
-finalResults_path_modelruns = '~/projects/finalResults/inversion/Goujon_long_LS_2022-06-27_01/'
+finalResults_path_modelruns = '~/projects/finalResults/inversion/Goujon_long_LS_nodiff_2022-07-30_01/'
 
 json_SPIN = 'FirnAir_NGRIP_Goujon_long.json'
 json_MAIN = 'FirnAir_NGRIP_Spin2_Goujon_long.json'
 
 # optimization parameter files
-results_minimizer_spin_path = 'resultsFolder/2022-06-27_01_Goujon_LS_long_resultsInversion_minimizer_SPIN.h5'
-results_minimizer_main_path = 'resultsFolder/2022-06-27_01_Goujon_LS_long_resultsInversion_minimizer.h5'
+results_minimizer_spin_path = 'resultsFolder/2022-07-30_01_Goujon_LS_long_zero_resultsInversion_minimizer_SPIN.h5'
+results_minimizer_main_path = 'resultsFolder/2022-07-30_01_Goujon_LS_long_zero_resultsInversion_minimizer.h5'
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Set parameters
@@ -41,7 +41,7 @@ start_year_Spin2 = start_year_ - (year_Spin2 - overlap)
 end_year_Spin2 = start_year_ + overlap
 time_linear_temp = 1000  # first years of main run, where I interpolate from spin temperature to main run temperature forcing
 
-firnair_module = True  # this is to specify whether we use the firnair module in the CFM
+firnair_module = False  # this is to specify whether we use the firnair module in the CFM
 
 stpsPerYear = 0.5
 S_PER_YEAR = 31557600.0
